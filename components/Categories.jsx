@@ -10,7 +10,7 @@ const CategoriesGrid = () => {
 
   return (
     <View className="px-6 pt-6 pb-4">
-      <Text className="text-neutral-800 mb-4 text-lg font-semibold">
+      <Text className="text-neutral-800 mb-4 text-lg font-quicksand-semibold">
         Categories
       </Text>
 
