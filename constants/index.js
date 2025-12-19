@@ -1,8 +1,11 @@
 import arrowDown from "@/assets/icons/arrow-down.png";
 import arrowRight from "@/assets/icons/arrow-right.png";
 import bag from "@/assets/icons/bag.png";
+import cart from "@/assets/icons/cart2.png";
 import check from "@/assets/icons/check.png";
+import menu from "@/assets/icons/menu.png";
 import clock from "@/assets/icons/clock.png";
+import clockTwo from "@/assets/icons/clock2.png";
 import dollar from "@/assets/icons/dollar.png";
 import envelope from "@/assets/icons/envelope.png";
 import home from "@/assets/icons/home.png";
@@ -42,161 +45,205 @@ import success from "@/assets/images/success.png";
 import tomatoes from "@/assets/images/tomatoes.png";
 
 export const CATEGORIES = [
-    {
-        id: "1",
-        name: "All",
-    },
-    {
-        id: "2",
-        name: "Burger",
-    },
-    {
-        id: "3",
-        name: "Pizza",
-    },
-    {
-        id: "4",
-        name: "Wrap",
-    },
-    {
-        id: "5",
-        name: "Burrito",
-    },
+  {
+    id: "1",
+    name: "All",
+  },
+  {
+    id: "2",
+    name: "Burger",
+  },
+  {
+    id: "3",
+    name: "Pizza",
+  },
+  {
+    id: "4",
+    name: "Wrap",
+  },
+  {
+    id: "5",
+    name: "Burrito",
+  },
 ];
 
 export const offers = [
-    {
-        id: 1,
-        title: "SUMMER COMBO",
-        image: burgerOne,
-        color: "#D33B0D",
-    },
-    {
-        id: 2,
-        title: "BURGER BASH",
-        image: burgerTwo,
-        color: "#DF5A0C",
-    },
-    {
-        id: 3,
-        title: "PIZZA PARTY",
-        image: pizzaOne,
-        color: "#084137",
-    },
-    {
-        id: 4,
-        title: "BURRITO DELIGHT",
-        image: buritto,
-        color: "#EB920C",
-    },
+  {
+    id: 1,
+    title: "SUMMER DEAL",
+    image: burgerOne,
+    color: "#D33B0D",
+    price: 350, 
+    description: "A refreshing burger combo with fries and a soft drink.",
+  },
+  {
+    id: 2,
+    title: "BURGER BASH",
+    image: burgerTwo,
+    color: "#DF5A0C",
+    price: 450, 
+    description: "Juicy double burger with crispy fries and cheese.",
+  },
+  {
+    id: 3,
+    title: "PIZZA PARTY",
+    image: pizzaOne,
+    color: "#084137",
+    price: 550, 
+    description: "Delicious cheesy pizza loaded with your favorite toppings.",
+  },
+  {
+    id: 4,
+    title: "BURRITO ",
+    image: buritto,
+    color: "#EB920C",
+    price: 400,
+    description: "A flavorful burrito with fresh vegetables and spicy sauce.",
+  },
 ];
 
 export const sides = [
-    {
-        name: "Fries",
-        image: fries,
-        price: 3.5,
-    },
-    {
-        name: "Onion Rings",
-        image: onionRings,
-        price: 4.0,
-    },
-    {
-        name: "Mozarella Sticks",
-        image: mozarellaSticks,
-        price: 5.0,
-    },
-    {
-        name: "Coleslaw",
-        image: coleslaw,
-        price: 2.5,
-    },
-    {
-        name: "Salad",
-        image: salad,
-        price: 4.5,
-    },
+  {
+    name: "Fries",
+    image: fries,
+    price: 3.5,
+  },
+  {
+    name: "Onion Rings",
+    image: onionRings,
+    price: 4.0,
+  },
+  {
+    name: "Mozarella Sticks",
+    image: mozarellaSticks,
+    price: 5.0,
+  },
+  {
+    name: "Coleslaw",
+    image: coleslaw,
+    price: 2.5,
+  },
+  {
+    name: "Salad",
+    image: salad,
+    price: 4.5,
+  },
 ];
 
 export const toppings = [
-    {
-        name: "Avocado",
-        image: avocado,
-        price: 1.5,
-    },
-    {
-        name: "Bacon",
-        image: bacon,
-        price: 2.0,
-    },
-    {
-        name: "Cheese",
-        image: cheese,
-        price: 1.0,
-    },
-    {
-        name: "Cucumber",
-        image: cucumber,
-        price: 0.5,
-    },
-    {
-        name: "Mushrooms",
-        image: mushrooms,
-        price: 1.2,
-    },
-    {
-        name: "Onions",
-        image: onions,
-        price: 0.5,
-    },
-    {
-        name: "Tomatoes",
-        image: tomatoes,
-        price: 0.7,
-    },
+  {
+    name: "Avocado",
+    image: avocado,
+    price: 1.5,
+  },
+  {
+    name: "Bacon",
+    image: bacon,
+    price: 2.0,
+  },
+  {
+    name: "Cheese",
+    image: cheese,
+    price: 1.0,
+  },
+  {
+    name: "Cucumber",
+    image: cucumber,
+    price: 0.5,
+  },
+  {
+    name: "Mushrooms",
+    image: mushrooms,
+    price: 1.2,
+  },
+  {
+    name: "Onions",
+    image: onions,
+    price: 0.5,
+  },
+  {
+    name: "Tomatoes",
+    image: tomatoes,
+    price: 0.7,
+  },
 ];
 
 export const images = {
-    avatar,
-    avocado,
-    bacon,
-    burgerOne,
-    burgerTwo,
-    buritto,
-    cheese,
-    coleslaw,
-    cucumber,
-    emptyState,
-    fries,
-    loginGraphic,
-    logo,
-    mozarellaSticks,
-    mushrooms,
-    onionRings,
-    onions,
-    pizzaOne,
-    salad,
-    success,
-    tomatoes,
-    arrowBack,
-    arrowDown,
-    arrowRight,
-    bag,
-    check,
-    clock,
-    dollar,
-    envelope,
-    home,
-    location,
-    logout,
-    minus,
-    pencil,
-    person,
-    phone,
-    plus,
-    search,
-    star,
-    trash,
-    user,
+  avatar,
+  avocado,
+  bacon,
+  burgerOne,
+  burgerTwo,
+  buritto,
+  cheese,
+  coleslaw,
+  cucumber,
+  emptyState,
+  fries,
+  loginGraphic,
+  logo,
+  mozarellaSticks,
+  mushrooms,
+  onionRings,
+  onions,
+  pizzaOne,
+  salad,
+  success,
+  tomatoes,
+  arrowBack,
+  arrowDown,
+  arrowRight,
+  bag,
+  check,
+  clock,
+  clockTwo,
+  dollar,
+  envelope,
+  home,
+  location,
+  logout,
+  minus,
+  pencil,
+  person,
+  phone,
+  plus,
+  search,
+  star,
+  trash,
+  cart,
+  user,
+  menu,
 };
+
+export const categories = [
+  {
+    id: "1",
+    name: "Meals",
+    image: images.burgerOne,
+  },
+  {
+    id: "2",
+    name: "Burger",
+    image: images.burgerTwo,
+  },
+  {
+    id: "3",
+    name: "Pizza",
+    image: images.pizzaOne,
+  },
+  {
+    id: "4",
+    name: "mozarella sticks",
+    image: images.mozarellaSticks,
+  },
+  {
+    id: "5",
+    name: "Burrito",
+    image: images.buritto,
+  },
+  {
+    id: "6",
+    name: "Fries",
+    image: images.fries,
+  },
+];
