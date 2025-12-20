@@ -3,7 +3,6 @@ import arrowRight from "@/assets/icons/arrow-right.png";
 import bag from "@/assets/icons/bag.png";
 import cart from "@/assets/icons/cart2.png";
 import check from "@/assets/icons/check.png";
-import menu from "@/assets/icons/menu.png";
 import clock from "@/assets/icons/clock.png";
 import clockTwo from "@/assets/icons/clock2.png";
 import dollar from "@/assets/icons/dollar.png";
@@ -11,6 +10,7 @@ import envelope from "@/assets/icons/envelope.png";
 import home from "@/assets/icons/home.png";
 import location from "@/assets/icons/location.png";
 import logout from "@/assets/icons/logout.png";
+import menu from "@/assets/icons/menu.png";
 import minus from "@/assets/icons/minus.png";
 import pencil from "@/assets/icons/pencil.png";
 import person from "@/assets/icons/person.png";
@@ -45,27 +45,24 @@ import success from "@/assets/images/success.png";
 import tomatoes from "@/assets/images/tomatoes.png";
 
 export const CATEGORIES = [
-  {
-    id: "1",
-    name: "All",
-  },
-  {
-    id: "2",
-    name: "Burger",
-  },
-  {
-    id: "3",
-    name: "Pizza",
-  },
-  {
-    id: "4",
-    name: "Wrap",
-  },
-  {
-    id: "5",
-    name: "Burrito",
-  },
+  { id: 1, name: "Burger" },
+  { id: 2, name: "Pizza" },
+  { id: 3, name: "Wrap" },
+  { id: 4, name: "Burrito" },
+  { id: 5, name: "Sandwich" },
+  { id: 6, name: "Pasta" },
+  { id: 7, name: "Shawarma" },
+  { id: 8, name: "Fries" },
+  { id: 9, name: "Fried Chicken" },
+  { id: 10, name: "BBQ" },
+  { id: 11, name: "Rice Bowls" },
+  { id: 12, name: "Noodles" },
+  { id: 13, name: "Salad" },
+  { id: 14, name: "Dessert" },
+  { id: 15, name: "Ice Cream" },
+  { id: 16, name: "Beverages" },
 ];
+
 
 export const offers = [
   {
@@ -217,33 +214,39 @@ export const images = {
 
 export const categories = [
   {
-    id: "1",
+    id: 1,
     name: "Meals",
     image: images.burgerOne,
+    price: 1000,
   },
   {
-    id: "2",
+    id: 2,
     name: "Burger",
     image: images.burgerTwo,
+    price: 500,
   },
   {
-    id: "3",
+    id: 3,
     name: "Pizza",
     image: images.pizzaOne,
+    price: 1600,
   },
   {
-    id: "4",
-    name: "mozarella sticks",
+    id: 4,
+    name: "Mozarella Sticks",
     image: images.mozarellaSticks,
+    price: 300
   },
   {
-    id: "5",
+    id: 5,
     name: "Burrito",
     image: images.buritto,
+    price: 700,
   },
   {
-    id: "6",
+    id: 6,
     name: "Fries",
     image: images.fries,
+    price: 200,
   },
 ];

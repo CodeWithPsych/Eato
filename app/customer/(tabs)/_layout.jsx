@@ -16,7 +16,7 @@ const TabBarIcon = ({ title, icon, focused }) => (
         width: 25,
         height: 25,
         marginBottom: 4,
-        tintColor: focused ? "#FE8C00" : "#5D5F6D",
+        tintColor: focused ? "#FE8C00" : "#555555",
       }}
       resizeMode="contain"
     />
@@ -24,7 +24,7 @@ const TabBarIcon = ({ title, icon, focused }) => (
       style={{
         fontSize: 10,
         fontWeight: "700",
-        color: focused ? "#FE8C00" : "#A1A1A1",
+        color: focused ? "#FE8C00" : "#555555",
       }}
     >
       {title}
@@ -48,7 +48,7 @@ export default function TabLayout() {
           height: 80,
           position: "absolute",
           bottom: 20,
-          backgroundColor: "white",
+          backgroundColor: "#f7dec2",
           shadowColor: "#1a1a1a",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,

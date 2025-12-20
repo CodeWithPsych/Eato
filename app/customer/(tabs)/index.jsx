@@ -11,7 +11,7 @@ export default function Index() {
 
   // Header Component
   const Header = () => (
-    <View className="bg-primary px-6 pt-6 pb-4 rounded-bl-3xl rounded-br-3xl">
+    <View className="bg-primary px-6 pt-6 pb-4 rounded-br-full">
       {/* Table number */}
       <View className="flex-row gap-2 items-center">
         <Image
@@ -47,7 +47,7 @@ export default function Index() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-orange-100">
       <FlatList
         data={[{ id: "content" }]}
         keyExtractor={(item) => item.id}

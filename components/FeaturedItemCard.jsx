@@ -2,7 +2,7 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 
 const FeaturedItemCard = ({ item, onAddToCart }) => {
   return (
-    <View className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden mb-4">
+    <View className="bg-neutral-50 rounded-2xl shadow-sm border border-neutral-100 overflow-hidden mb-4">
       <View className="flex-row gap-4">
         <View className="w-28 h-28 flex-shrink-0 rounded-xl overflow-hidden">
           <Image

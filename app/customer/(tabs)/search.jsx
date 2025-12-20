@@ -1,42 +1,58 @@
 import SearchBar from "@/components/SearchBar";
+import Filter from "@/components/Filter";
+import MenuCart from "@/components/MenuCart";
+import CartButton from "@/components/CartButton";
+import { categories } from "@/constants";
+import cn from "clsx";
 import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
-  const data = []; // Replace with search results
+const data = categories;
 
   return (
-    <SafeAreaView className="flex-1 bg-white px-5 pt-5">
-      {/* Header */}
-      <View className="mb-5">
-        <Text className="uppercase text-primary font-quicksand-bold text-lg">
-          Menu
-        </Text>
-        <Text className="text-dark-100 font-quicksand-semibold mt-1">
-          Find your favourite food
-        </Text>
-      </View>
+    <SafeAreaView className="bg-orange-100 h-full">
+      <FlatList
+        data={data}
+        renderItem={({ item, index }) => {
+          const isLeftColumn = index % 2 === 0;
 
-   <SearchBar/>
-
-      {/* Search Results */}
-      {data.length === 0 ? (
-        <Text className="text-center mt-10 text-gray-500">
-          No Results Found!
-        </Text>
-      ) : (
-        <FlatList
-          data={data}
-          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-          renderItem={({ item }) => (
-            <View className="mb-4 bg-gray-100 p-4 rounded-lg">
-              <Text className="text-neutral-800">{item.name}</Text>
+          return (
+            <View
+              className={cn(
+                "flex-1 max-w-[48%]",
+                !isLeftColumn ? "mt-10" : "mt-0"
+              )}
+            >
+              <MenuCart item={item} />
             </View>
-          )}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
-        />
-      )}
+          );
+        }}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        columnWrapperClassName="gap-7"
+        contentContainerClassName="gap-7 px-5 pb-32"
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={() => (
+          <View className="my-5 gap-5">
+            {/* Header */}
+            <View className="flex-between flex-row w-full">
+              <View className="flex-start">
+                <Text className="font-quicksand-bold text-xl uppercase text-primary">
+                  Menu
+                </Text>
+                <Text className="font-quicksand-semibold text-dark-100 mt-2">
+                  Find your favourite food
+                </Text>
+              </View>
+              <CartButton />
+            </View>
+
+            <SearchBar />
+            <Filter categories={categories} />
+          </View>
+        )}
+      />
     </SafeAreaView>
   );
 };
