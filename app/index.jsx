@@ -15,7 +15,7 @@ export default function Index() {
 
         <View className="flex-row gap-3">
           {/* Restaurant Icon */}
-          <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center">
+          <TouchableOpacity  onPress={() => router.push("/resturant")} className="w-10 h-10 rounded-full bg-white items-center justify-center">
             <Image
               source={images.restaurant}
               className="size-5"
@@ -25,7 +25,7 @@ export default function Index() {
           </TouchableOpacity>
 
           {/* Chef / Kitchen Icon */}
-          <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center">
+          <TouchableOpacity  onPress={() => router.push("/chef")} className="w-10 h-10 rounded-full bg-white items-center justify-center">
             <Image
               source={images.chef}
                className="size-5"
@@ -49,6 +49,7 @@ export default function Index() {
               source={images.qrcode}
               className="w-20 h-20"
               resizeMode="contain"
+              tintColor={"#ff4c1b"}
             />
           </View>
         </View>
@@ -96,7 +97,7 @@ export default function Index() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push("/owner/login")}
+          onPress={() => router.push("/owner")}
           className="bg-purple-600 w-full py-4 rounded-2xl mt-3"
         >
           <Text className="text-white text-center font-quicksand-bold">
