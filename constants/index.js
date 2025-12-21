@@ -3,6 +3,9 @@ import arrowRight from "@/assets/icons/arrow-right.png";
 import bag from "@/assets/icons/bag.png";
 import cart from "@/assets/icons/cart2.png";
 import check from "@/assets/icons/check.png";
+import chef from "@/assets/icons/cheff.png";
+import restaurant from "@/assets/icons/restaurant.png";
+import qrcode from "@/assets/icons/QrCode.png";
 import clock from "@/assets/icons/clock.png";
 import clockTwo from "@/assets/icons/clock2.png";
 import dollar from "@/assets/icons/dollar.png";
@@ -64,14 +67,13 @@ export const CATEGORIES = [
   { id: 16, name: "Beverages" },
 ];
 
-
 export const offers = [
   {
     id: 1,
     title: "SUMMER DEAL",
     image: burgerOne,
     color: "#D33B0D",
-    price: 350, 
+    price: 350,
     description: "A refreshing burger combo with fries and a soft drink.",
   },
   {
@@ -79,7 +81,7 @@ export const offers = [
     title: "BURGER BASH",
     image: burgerTwo,
     color: "#DF5A0C",
-    price: 450, 
+    price: 450,
     description: "Juicy double burger with crispy fries and cheese.",
   },
   {
@@ -87,7 +89,7 @@ export const offers = [
     title: "PIZZA PARTY",
     image: pizzaOne,
     color: "#084137",
-    price: 550, 
+    price: 550,
     description: "Delicious cheesy pizza loaded with your favorite toppings.",
   },
   {
@@ -205,6 +207,9 @@ export const images = {
   person,
   phone,
   plus,
+  chef,
+  restaurant,
+  qrcode,
   search,
   star,
   trash,
@@ -237,7 +242,7 @@ export const categories = [
     id: 4,
     name: "Mozarella Sticks",
     image: images.mozarellaSticks,
-    price: 300
+    price: 300,
   },
   {
     id: 5,
