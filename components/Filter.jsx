@@ -27,7 +27,7 @@ const Filter = ({ categories = [] }) => {
               "px-4 py-2 rounded-full",
               active === item.id
                 ? "bg-orange-600"
-                : "bg-neutral-100"
+                : "bg-orange-50 border-2 border-orange-200 text-center"
             )}
           >
             <Text

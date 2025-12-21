@@ -4,7 +4,7 @@ import { images } from "@/constants";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Index() {
+export default function Home() {
   const handleAddToCart = ( item) => {
     console.log("Added to cart:", item.title);
   };
@@ -21,7 +21,7 @@ export default function Index() {
           tintColor="white"
         />
         <Text className="text-white font-quicksand-semibold">
-          Table No 12
+          Table No 5
         </Text>
       </View>
 

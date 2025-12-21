@@ -14,6 +14,7 @@ import menu from "@/assets/icons/menu.png";
 import minus from "@/assets/icons/minus.png";
 import pencil from "@/assets/icons/pencil.png";
 import person from "@/assets/icons/person.png";
+import bell from "@/assets/icons/bell.png";
 import phone from "@/assets/icons/phone.png";
 import plus from "@/assets/icons/plus.png";
 import search from "@/assets/icons/search.png";
@@ -210,6 +211,7 @@ export const images = {
   cart,
   user,
   menu,
+  bell,
 };
 
 export const categories = [

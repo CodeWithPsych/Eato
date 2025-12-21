@@ -4,7 +4,7 @@ const CategoryCard = ({ item, onPress }) => {
   return (
     <Pressable
       onPress={() => onPress(item)}
-      className="flex-1 bg-neutral-50 rounded-xl p-4 border mb-2 border-neutral-100 shadow-sm active:scale-95"
+      className="flex-1 bg-orange-50 rounded-xl p-4 border mb-2 border-orange-200 shadow-sm active:scale-95"
     >
       <View className="w-14 h-14 mx-auto mb-2 rounded-full bg-orange-100 items-center justify-center overflow-hidden">
         <Image

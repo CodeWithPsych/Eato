@@ -7,7 +7,7 @@ import cn from "clsx";
 import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const Search = () => {
+const Menu = () => {
 const data = categories;
 
   return (
@@ -57,4 +57,4 @@ const data = categories;
   );
 };
 
-export default Search;
+export default Menu;

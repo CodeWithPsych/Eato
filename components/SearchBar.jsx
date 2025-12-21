@@ -6,7 +6,7 @@ const SearchBar = () => {
   const [query, setQuery] = useState("");
 
   return (
-    <View className="flex-row items-center bg-white-100 rounded-3xl border-2 border-gray-300 px-3 py-2 mb-5 ">
+    <View className="flex-row items-center bg-orange-50 rounded-3xl border-2 border-orange-200 px-3 py-2 mb-5 ">
       <TextInput
         className="flex-1 text-base  px-2 text-black"
         placeholder="Search for food items..."
