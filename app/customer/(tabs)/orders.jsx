@@ -1,15 +1,26 @@
-import { Text, View, Image, FlatList } from "react-native";
+import { Text, View, Image, FlatList, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useOrdersStore } from "@/store/orders.store";
 import { images } from "@/constants";
 import CustomHeader from "@/components/CustomHeader"; // import CustomHeader
 
 const Orders = () => {
-  const { orders } = useOrdersStore();
+  const { orders, markOrderReady } = useOrdersStore();
 
   const renderOrder = ({ item: order }) => {
-    const statusIcon = order.status === "pending" ? images.clock : images.check;
-    const statusText = order.status === "pending" ? "Pending" : "Delivered";
+    const statusIcon =
+      order.status === "pending"
+        ? images.clock
+        : order.status === "accepted"
+        ? images.clock
+        : images.check;
+
+    const statusText =
+      order.status === "pending"
+        ? "Pending"
+        : order.status === "accepted"
+        ? "Preparing"
+        : "Ready";
 
     return (
       <View className="bg-white rounded-2xl p-4 mb-4 border-2 border-gray-200">
@@ -63,6 +74,16 @@ const Orders = () => {
             </Text>
           </View>
         </View>
+
+        {/* Ready Button */}
+        {order.status === "accepted" && (
+          <TouchableOpacity
+            onPress={() => markOrderReady(order.id)}
+            className="bg-blue-600 py-3 mt-4 rounded-xl items-center"
+          >
+            <Text className="text-white font-semibold">Mark as Ready</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -77,14 +98,14 @@ const Orders = () => {
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              top:-130,
+              top: -130,
             }}
           >
             <Image
               source={images.emptyState} // your empty state image
               style={{
-                width: 200, // adjust as needed
-                height: 200, // adjust as needed
+                width: 200,
+                height: 200,
                 resizeMode: "contain",
               }}
             />

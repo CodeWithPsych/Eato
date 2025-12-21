@@ -1,10 +1,11 @@
-import { Text, View } from "react-native";
+import { Stack } from "expo-router";
 
-export default function ChefLayout() {
- 
-   return (
-    <View>
-        <Text>Chef Layout</Text>
-    </View>
+export default function KitchenLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false, 
+      }}
+    />
   );
 }

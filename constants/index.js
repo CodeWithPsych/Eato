@@ -5,6 +5,7 @@ import cart from "@/assets/icons/cart2.png";
 import check from "@/assets/icons/check.png";
 import chef from "@/assets/icons/cheff.png";
 import restaurant from "@/assets/icons/restaurant.png";
+import kitchen from "@/assets/icons/kitchen.png";
 import qrcode from "@/assets/icons/QrCode.png";
 import clock from "@/assets/icons/clock.png";
 import clockTwo from "@/assets/icons/clock2.png";
@@ -194,6 +195,7 @@ export const images = {
   arrowDown,
   arrowRight,
   bag,
+  kitchen,
   check,
   clock,
   clockTwo,
