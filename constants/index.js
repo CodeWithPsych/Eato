@@ -1,30 +1,34 @@
 import arrowDown from "@/assets/icons/arrow-down.png";
 import arrowRight from "@/assets/icons/arrow-right.png";
 import bag from "@/assets/icons/bag.png";
+import bell from "@/assets/icons/bell.png";
 import cart from "@/assets/icons/cart2.png";
 import check from "@/assets/icons/check.png";
 import chef from "@/assets/icons/cheff.png";
-import restaurant from "@/assets/icons/restaurant.png";
-import kitchen from "@/assets/icons/kitchen.png";
-import qrcode from "@/assets/icons/QrCode.png";
 import clock from "@/assets/icons/clock.png";
 import clockTwo from "@/assets/icons/clock2.png";
 import dollar from "@/assets/icons/dollar.png";
+import download from "@/assets/icons/download.png";
 import envelope from "@/assets/icons/envelope.png";
+import hide from "@/assets/icons/hide.png";
 import home from "@/assets/icons/home.png";
+import kitchen from "@/assets/icons/kitchen.png";
 import location from "@/assets/icons/location.png";
+import lock from "@/assets/icons/lock.png";
 import logout from "@/assets/icons/logout.png";
 import menu from "@/assets/icons/menu.png";
 import minus from "@/assets/icons/minus.png";
 import pencil from "@/assets/icons/pencil.png";
 import person from "@/assets/icons/person.png";
-import bell from "@/assets/icons/bell.png";
 import phone from "@/assets/icons/phone.png";
 import plus from "@/assets/icons/plus.png";
+import qrcode from "@/assets/icons/QrCode.png";
+import restaurant from "@/assets/icons/restaurant.png";
 import search from "@/assets/icons/search.png";
 import star from "@/assets/icons/star.png";
 import trash from "@/assets/icons/trash.png";
 import user from "@/assets/icons/user.png";
+import visible from "@/assets/icons/visible.png";
 import arrowBack from "../assets/icons/arrow-back.png";
 
 import avatar from "@/assets/images/avatar.png";
@@ -200,6 +204,7 @@ export const images = {
   clock,
   clockTwo,
   dollar,
+  download,
   envelope,
   home,
   location,
@@ -211,6 +216,9 @@ export const images = {
   plus,
   chef,
   restaurant,
+  visible,
+  hide,
+  lock,
   qrcode,
   search,
   star,

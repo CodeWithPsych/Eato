@@ -1,12 +1,12 @@
-import { useState } from "react";
 import CartItem from "@/components/CartItem";
+import CustomAlert from "@/components/CustomAlert"; // Import CustomAlert
 import CustomButton from "@/components/CustomButton";
 import CustomHeader from "@/components/CustomHeader";
-import CustomAlert from "@/components/CustomAlert"; // Import CustomAlert
 import { images } from "@/constants";
 import { useCartStore } from "@/store/cart.store";
 import { useOrdersStore } from "@/store/orders.store";
 import cn from "clsx";
+import { useState } from "react";
 import { FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -91,7 +91,7 @@ const Cart = () => {
                   value={`Rs: ${totalPrice.toFixed(2)}`}
                 />
 
-                <PaymentInfoStripe label="Delivery Fee" value="Rs: 5.00" />
+                <PaymentInfoStripe label="GST" value="Rs: 5.00" />
 
                 <PaymentInfoStripe
                   label="Discount"

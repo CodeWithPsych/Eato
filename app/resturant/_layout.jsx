@@ -1,10 +1,11 @@
-import { Text, View } from "react-native";
+import { Stack } from "expo-router";
 
-export default function ResturantLayout() {
- 
-   return (
-    <View>
-        <Text>Resturant Layout</Text>
-    </View>
+export default function NewResturantLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false, 
+      }}
+    />
   );
 }
