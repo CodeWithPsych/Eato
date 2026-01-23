@@ -1,10 +1,10 @@
-import { Text, View } from "react-native";
+import { Stack } from "expo-router";
 
 export default function OwnerLayout() {
- 
-   return (
-    <View>
-        <Text>Owner Layout</Text>
-    </View>
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" />
+    </Stack>
   );
 }

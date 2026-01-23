@@ -42,6 +42,7 @@ export default function SetTables() {
           <Text className="text-white font-bold">4</Text>
         </View>
       </View>
+
       {/* CONTENT */}
       <View className="flex-1 ">
 
@@ -113,7 +114,7 @@ export default function SetTables() {
 
         {showQRCodes && (
           <TouchableOpacity
-            onPress={() => router.push("/dashboard")}
+            onPress={() => router.push("/owner")}
             className="mt-4 bg-green-600 py-3 rounded-xl"
           >
             <Text className="text-white text-center">
