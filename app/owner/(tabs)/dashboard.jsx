@@ -1,5 +1,12 @@
 import { images } from "@/constants";
-import { Image, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function OwnerDashboard() {
   const todayStats = {
@@ -48,73 +55,136 @@ export default function OwnerDashboard() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-neutral-50 px-5 pt-6 pb-24">
-      {/* Header */}
-      <View className="mb-6">
-        <Text className="text-2xl font-semibold text-neutral-800">
-          Owner Dashboard
-        </Text>
-        <Text className="text-sm text-neutral-500">The Golden Spoon</Text>
-      </View>
+    <ScrollView className="flex-1 bg-neutral-50  pt-6 pb-24">
+    
 
       {/* Stats Cards */}
-      <View className="flex-row flex-wrap gap-4 mb-6">
-        {[
-          {
-            label: "Total Sales",
-            value: `Rs ${todayStats.totalSales.toLocaleString()}`,
-            bg: "from-emerald-500 to-emerald-600",
-            icon: images.dollar,
-          },
-          {
-            label: "Total Orders",
-            value: todayStats.totalOrders,
-            bg: "from-indigo-500 to-indigo-600",
-            icon: images.bag,
-          },
-          {
-            label: "Pending",
-            value: todayStats.pendingOrders,
-            sub: "Active orders",
-            bg: "from-orange-500 to-red-600",
-            icon: images.clock,
-          },
-          {
-            label: "Served",
-            value: todayStats.servedOrders,
-            sub: "Completed today",
-            bg: "from-purple-500 to-pink-600",
-            icon: images.user,
-          },
-        ].map((card, index) => (
-          <View
-            key={index}
-            className={`w-[48%] bg-gradient-to-br ${card.bg} rounded-2xl p-4`}
-          >
-            <View className="flex-row items-center gap-2 mb-2">
-              <Image
-                source={card.icon}
-                tintColor={"white"}
-                className="w-5 h-5"
-              />
-              <Text className="text-sm text-white opacity-90">
-                {card.label}
-              </Text>
-            </View>
-            <Text className="text-2xl font-bold text-white">{card.value}</Text>
-            {card.sub && (
-              <Text className="text-sm text-white opacity-90 mt-1">
-                {card.sub}
-              </Text>
-            )}
-          </View>
-        ))}
+      <View className="mb-6 px-5 ">
+        {/* First Row */}
+        <View className="flex-row justify-between mb-4">
+          {[0, 1].map((index) => {
+            const card = [
+              {
+                label: "Total Sales",
+                value: `Rs ${todayStats.totalSales.toLocaleString()}`,
+                bg: "bg-emerald-500",
+                icon: images.dollar,
+              },
+              {
+                label: "Total Orders",
+                value: todayStats.totalOrders,
+                bg: "bg-indigo-500",
+                icon: images.bag,
+              },
+              {
+                label: "Pending",
+                value: todayStats.pendingOrders,
+                sub: "Active orders",
+                bg: "bg-orange-500",
+                icon: images.clock,
+              },
+              {
+                label: "Served",
+                value: todayStats.servedOrders,
+                sub: "Completed today",
+                bg: "bg-purple-500",
+                icon: images.user,
+              },
+            ][index];
+
+            return (
+              <View
+                key={index}
+                className={`w-[48%] ${card.bg} rounded-2xl p-4`}
+              >
+                <View className="flex-row items-center gap-2 mb-2">
+                  <Image
+                    source={card.icon}
+                    tintColor="white"
+                    className="w-5 h-5"
+                  />
+                  <Text className="text-sm text-white opacity-90">
+                    {card.label}
+                  </Text>
+                </View>
+                <Text className="text-2xl font-bold text-white">
+                  {card.value}
+                </Text>
+                {card.sub && (
+                  <Text className="text-sm text-white opacity-90 mt-1">
+                    {card.sub}
+                  </Text>
+                )}
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Second Row */}
+        <View className="flex-row justify-between">
+          {[2, 3].map((index) => {
+            const card = [
+              {
+                label: "Total Sales",
+                value: `Rs ${todayStats.totalSales.toLocaleString()}`,
+                bg: "bg-emerald-500",
+                icon: images.dollar,
+              },
+              {
+                label: "Total Orders",
+                value: todayStats.totalOrders,
+                bg: "bg-indigo-500",
+                icon: images.bag,
+              },
+              {
+                label: "Pending",
+                value: todayStats.pendingOrders,
+                sub: "Active orders",
+                bg: "bg-orange-500",
+                icon: images.clock,
+              },
+              {
+                label: "Served",
+                value: todayStats.servedOrders,
+                sub: "Completed today",
+                bg: "bg-purple-500",
+                icon: images.user,
+              },
+            ][index];
+
+            return (
+              <View
+                key={index}
+                className={`w-[48%] ${card.bg} rounded-2xl p-4`}
+              >
+                <View className="flex-row items-center gap-2 mb-2">
+                  <Image
+                    source={card.icon}
+                    tintColor="white"
+                    className="w-5 h-5"
+                  />
+                  <Text className="text-sm text-white opacity-90">
+                    {card.label}
+                  </Text>
+                </View>
+                <Text className="text-2xl font-bold text-white">
+                  {card.value}
+                </Text>
+                {card.sub && (
+                  <Text className="text-sm text-white opacity-90 mt-1">
+                    {card.sub}
+                  </Text>
+                )}
+              </View>
+            );
+          })}
+        </View>
       </View>
 
       {/* Top Selling Items */}
-      <View className="bg-white rounded-2xl p-5 border border-neutral-100 mb-6">
+      <View className="bg-white rounded-2xl px-5 p-5 border border-neutral-100 mb-6">
         <View className="flex-row items-center gap-2 mb-4">
-          <Image source={images.star} tintColor={"white"} className="w-5 h-5" />
+          <Image source={images.star} tintColor="#FACC15" className="w-5 h-5" />
           <Text className="text-lg font-semibold text-neutral-800">
             Top Selling Items
           </Text>
@@ -146,10 +216,13 @@ export default function OwnerDashboard() {
       </View>
 
       {/* Recent Orders */}
-      <View>
-        <Text className="text-lg font-semibold text-neutral-800 mb-4">
-          Recent Orders
-        </Text>
+        <View className="bg-white rounded-2xl px-5 p-5 border border-neutral-100 mb-6">
+        <View className="flex-row items-center gap-2 mb-4">
+          <Image source={images.clock} tintColor="black" className="w-5 h-5" />
+          <Text className="text-lg font-semibold text-neutral-800">
+            Recent Orders
+          </Text>
+        </View>
         {recentOrders.map((order) => (
           <View
             key={order.id}

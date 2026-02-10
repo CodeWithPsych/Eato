@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import { images } from "@/constants";
 
 const TabIcon = ({ icon, title, focused }) => (
@@ -9,9 +9,44 @@ const TabIcon = ({ icon, title, focused }) => (
       className="w-6 h-6 mb-1"
       style={{ tintColor: focused ? "#7C3AED" : "#6B7280" }}
     />
-    <Text className={`text-[10px] font-semibold ${focused ? "text-purple-600" : "text-gray-500"}`}>
+    <Text
+      className={`text-[10px] font-semibold ${
+        focused ? "text-purple-600" : "text-gray-500"
+      }`}
+    >
       {title}
     </Text>
+  </View>
+);
+
+const OwnerHeader = () => (
+  <View className="p-6 bg-purple-600 rounded-b-2xl">
+    <View className="flex-row items-center justify-between">
+      <View className="flex-row items-center gap-4">
+        <TouchableOpacity onPress={() => Alert.alert("onBack pressed")}>
+          <Image
+            source={images.arrowBack}
+            className="w-6 h-6"
+            tintColor="white"
+          />
+        </TouchableOpacity>
+
+        <View>
+          <Text className="text-white text-lg font-semibold">
+            Owner Dashboard
+          </Text>
+          <Text className="text-sm text-white opacity-90">
+            The Golden Spoon
+          </Text>
+        </View>
+      </View>
+
+      <Image
+        source={images.person}
+        className="w-10 h-10"
+        tintColor="white"
+      />
+    </View>
   </View>
 );
 
@@ -19,7 +54,7 @@ export default function OwnerTabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        header: () => <OwnerHeader />,
         tabBarShowLabel: false,
         tabBarStyle: {
           height: 80,
@@ -33,30 +68,38 @@ export default function OwnerTabsLayout() {
     >
       <Tabs.Screen
         name="dashboard"
-        options={{ tabBarIcon: ({ focused }) => (
-          <TabIcon icon={images.dashboard} title="Dashboard" focused={focused} />
-        )}}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={images.dashboard} title="Dashboard" focused={focused} />
+          ),
+        }}
       />
 
       <Tabs.Screen
         name="orders"
-        options={{ tabBarIcon: ({ focused }) => (
-          <TabIcon icon={images.orders} title="Orders" focused={focused} />
-        )}}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={images.orders} title="Orders" focused={focused} />
+          ),
+        }}
       />
 
       <Tabs.Screen
         name="menu"
-        options={{ tabBarIcon: ({ focused }) => (
-          <TabIcon icon={images.menu} title="Menu" focused={focused} />
-        )}}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={images.menu} title="Menu" focused={focused} />
+          ),
+        }}
       />
 
       <Tabs.Screen
         name="profile"
-        options={{ tabBarIcon: ({ focused }) => (
-          <TabIcon icon={images.user} title="Profile" focused={focused} />
-        )}}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={images.user} title="Profile" focused={focused} />
+          ),
+        }}
       />
     </Tabs>
   );
