@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OwnerSignin() {
   const [email, setEmail] = useState("");
@@ -26,26 +27,28 @@ export default function OwnerSignin() {
       className="flex-1 bg-gradient-to-br from-purple-50 to-indigo-50"
     >
       {/* Header */}
-      <View className="flex-row items-center gap-4 px-6 pt-14 pb-4 bg-white shadow-sm">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Image
-            source={images.back}
-            className="w-6 h-6"
-            tintColor="#374151"
-          />
-        </TouchableOpacity>
+      <SafeAreaView className="bg-white shadow-sm">
+        <View className="flex-row items-center py-4">
+          <TouchableOpacity onPress={() => router.back()}>
+            <Image
+              source={images.back}
+              className="w-6 h-6"
+              tintColor="#374151"
+            />
+          </TouchableOpacity>
 
-        <View className="flex-row items-center gap-2">
-          <Image
-            source={images.user}
-            className="w-5 h-5"
-            tintColor="#7C3AED"
-          />
-          <Text className="text-lg font-semibold text-neutral-800">
-            Owner Login
-          </Text>
+          <View className="flex-row items-center gap-2">
+            <Image
+              source={images.user2}
+              className="w-5 h-5"
+              tintColor="#7C3AED"
+            />
+            <Text className="text-lg font-quicksand-semibold text-neutral-800 ">
+              Owner Login
+            </Text>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
 
       {/* Card */}
       <View className="flex-1 items-center justify-center px-6">
@@ -53,51 +56,65 @@ export default function OwnerSignin() {
           {/* Top Icon */}
           <View className="w-20 h-20 bg-purple-100 rounded-full items-center justify-center self-center mb-6">
             <Image
-              source={images.user}
+              source={images.user2}
               className="w-10 h-10"
               tintColor="#7C3AED"
             />
           </View>
 
-          <Text className="text-center text-neutral-800 font-semibold mb-1">
+          <Text className="text-center text-neutral-800 font-quicksand-bold mb-1">
             Restaurant Owner
           </Text>
-          <Text className="text-center text-sm text-neutral-600 mb-6">
+          <Text className="text-center text-sm font-quicksand-medium text-neutral-600 mb-6">
             Access your restaurant dashboard
           </Text>
 
           {/* Email */}
-          <Text className="text-neutral-700 mb-2">Email</Text>
-          <View className="relative mb-4">
-            <Image
-              source={images.user}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
-              tintColor="#9CA3AF"
-            />
-            <TextInput
-              placeholder="owner@restaurant.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              className="pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
-            />
+          <View className="mb-4">
+            <View className="relative justify-center">
+              <Image
+                source={images.user2}
+                style={{
+                  position: "absolute",
+                  left: 16,
+                  zIndex: 1,
+                  width: 20,
+                  height: 20,
+                }}
+                tintColor="#9CA3AF"
+              />
+              <TextInput
+                placeholder="owner@restaurant.com"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                className="pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
+              />
+            </View>
           </View>
 
           {/* Password */}
-          <Text className="text-neutral-700 mb-2">Password</Text>
-          <View className="relative mb-6">
-            <Image
-              source={images.lock}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
-              tintColor="#9CA3AF"
-            />
-            <TextInput
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              className="pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
-            />
+          <View className="mb-6">
+            <View className="relative justify-center">
+              <Image
+                source={images.lock}
+                style={{
+                  position: "absolute",
+                  left: 16,
+                  zIndex: 1,
+                  width: 20,
+                  height: 20,
+                }}
+                tintColor="#9CA3AF"
+              />
+              <TextInput
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                className="pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
+              />
+            </View>
           </View>
 
           {/* Button */}
@@ -105,12 +122,12 @@ export default function OwnerSignin() {
             onPress={handleLogin}
             className="bg-purple-600 py-3 rounded-xl"
           >
-            <Text className="text-white text-center font-semibold">
+            <Text className="text-white text-center font-quicksand-semibold">
               Login to Dashboard
             </Text>
           </TouchableOpacity>
 
-          <Text className="text-center text-xs text-neutral-500 mt-4">
+          <Text className="text-center text-xs text-neutral-500 mt-4 font-quicksand-semibold">
             Demo: Use any email and password
           </Text>
         </View>
