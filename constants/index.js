@@ -28,7 +28,9 @@ import search from "@/assets/icons/search.png";
 import star from "@/assets/icons/star.png";
 import trash from "@/assets/icons/trash.png";
 import user from "@/assets/icons/user.png";
+import user2 from "@/assets/icons/user2.png";
 import visible from "@/assets/icons/visible.png";
+import dashboard from "@/assets/icons/dashboard.png";
 import arrowBack from "../assets/icons/arrow-back.png";
 
 import avatar from "@/assets/images/avatar.png";
@@ -209,6 +211,7 @@ export const images = {
   home,
   location,
   logout,
+  dashboard,
   minus,
   pencil,
   person,
@@ -225,6 +228,7 @@ export const images = {
   trash,
   cart,
   user,
+  user2,
   menu,
   bell,
 };

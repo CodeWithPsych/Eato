@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
-import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import { images } from "@/constants";
+import { Tabs } from "expo-router";
+import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 
 const TabIcon = ({ icon, title, focused }) => (
   <View className="items-center justify-center pt-6">
@@ -10,6 +10,8 @@ const TabIcon = ({ icon, title, focused }) => (
       style={{ tintColor: focused ? "#7C3AED" : "#6B7280" }}
     />
     <Text
+      numberOfLines={1}
+      adjustsFontSizeToFit
       className={`text-[10px] font-semibold ${
         focused ? "text-purple-600" : "text-gray-500"
       }`}
@@ -32,20 +34,17 @@ const OwnerHeader = () => (
         </TouchableOpacity>
 
         <View>
-          <Text className="text-white text-lg font-semibold">
+          <Text className="text-white text-lg font-quicksand-bold">
             Owner Dashboard
           </Text>
-          <Text className="text-sm text-white opacity-90">
+          <Text className="text-sm text-white opacity-90 font-quicksand-semibold">
             The Golden Spoon
           </Text>
         </View>
       </View>
-
-      <Image
-        source={images.person}
-        className="w-10 h-10"
-        tintColor="white"
-      />
+      <View className="bg-purple-400 p-3 rounded-full">
+        <Image source={images.user2} className="w-6 h-6" tintColor="white" />
+      </View>
     </View>
   </View>
 );
@@ -70,7 +69,11 @@ export default function OwnerTabsLayout() {
         name="dashboard"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={images.dashboard} title="Dashboard" focused={focused} />
+            <TabIcon
+              icon={images.dashboard}
+              title="Dashboard"
+              focused={focused}
+            />
           ),
         }}
       />
@@ -79,7 +82,7 @@ export default function OwnerTabsLayout() {
         name="orders"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={images.orders} title="Orders" focused={focused} />
+            <TabIcon icon={images.cart} title="Orders" focused={focused} />
           ),
         }}
       />

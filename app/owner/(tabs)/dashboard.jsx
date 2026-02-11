@@ -55,7 +55,7 @@ export default function OwnerDashboard() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-neutral-50  pt-6 pb-24">
+    <ScrollView className="flex-1 bg-neutral-50  pt-6 pb-24"  contentContainerStyle={{ paddingBottom: 120 }}>
     
 
       {/* Stats Cards */}
@@ -74,21 +74,7 @@ export default function OwnerDashboard() {
                 label: "Total Orders",
                 value: todayStats.totalOrders,
                 bg: "bg-indigo-500",
-                icon: images.bag,
-              },
-              {
-                label: "Pending",
-                value: todayStats.pendingOrders,
-                sub: "Active orders",
-                bg: "bg-orange-500",
-                icon: images.clock,
-              },
-              {
-                label: "Served",
-                value: todayStats.servedOrders,
-                sub: "Completed today",
-                bg: "bg-purple-500",
-                icon: images.user,
+                icon: images.cart,
               },
             ][index];
 
@@ -122,33 +108,22 @@ export default function OwnerDashboard() {
 
         {/* Second Row */}
         <View className="flex-row justify-between">
-          {[2, 3].map((index) => {
+          {[0, 1].map((index) => {
             const card = [
-              {
-                label: "Total Sales",
-                value: `Rs ${todayStats.totalSales.toLocaleString()}`,
-                bg: "bg-emerald-500",
-                icon: images.dollar,
-              },
-              {
-                label: "Total Orders",
-                value: todayStats.totalOrders,
-                bg: "bg-indigo-500",
-                icon: images.bag,
-              },
+
               {
                 label: "Pending",
                 value: todayStats.pendingOrders,
                 sub: "Active orders",
                 bg: "bg-orange-500",
-                icon: images.clock,
+                icon: images.clockTwo,
               },
               {
                 label: "Served",
                 value: todayStats.servedOrders,
                 sub: "Completed today",
                 bg: "bg-purple-500",
-                icon: images.user,
+                icon: images.user2,
               },
             ][index];
 
