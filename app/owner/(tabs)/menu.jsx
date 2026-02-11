@@ -1,6 +1,13 @@
 import { CATEGORIES, images } from "@/constants";
 import { useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Menu() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -111,7 +118,12 @@ export default function Menu() {
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-neutral-800 font-semibold">Categories</Text>
 
-        <TouchableOpacity className="bg-purple-600 p-2 rounded-xl">
+        <TouchableOpacity
+          className="bg-purple-600 p-2 rounded-xl"
+          onPress={() =>
+            Alert.alert("Pressed", "You pressed the add categories button!")
+          }
+        >
           <Image source={images.plus} className="w-5 h-5" tintColor="white" />
         </TouchableOpacity>
       </View>
@@ -161,7 +173,12 @@ export default function Menu() {
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-neutral-800 font-semibold">Menu Items</Text>
 
-        <TouchableOpacity className="flex-row items-center bg-purple-600 px-4 py-2 rounded-xl">
+        <TouchableOpacity
+          className="flex-row items-center bg-purple-600 px-4 py-2 rounded-xl"
+          onPress={() =>
+            Alert.alert("Pressed", "You pressed the add items button!")
+          }
+        >
           <Image
             source={images.plus}
             className="w-4 h-4 mr-2"
@@ -200,6 +217,9 @@ export default function Menu() {
                     className={`px-2 py-1 rounded ${
                       item.featured ? "bg-yellow-100" : "bg-neutral-100"
                     }`}
+                    onPress={() =>
+                      Alert.alert("Pressed", "You pressed add to fvrt!")
+                    }
                   >
                     <Image
                       source={images.star}
@@ -208,7 +228,9 @@ export default function Menu() {
                     />
                   </TouchableOpacity>
 
-                  <TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => Alert.alert("Pressed", "You pressed edit!")}
+                  >
                     <Image
                       source={images.pencil}
                       className="w-4 h-4"
@@ -216,7 +238,7 @@ export default function Menu() {
                     />
                   </TouchableOpacity>
 
-                  <TouchableOpacity>
+                  <TouchableOpacity              onPress={() => Alert.alert("Pressed", "You pressed delete!")}>
                     <Image
                       source={images.trash}
                       className="w-4 h-4"
