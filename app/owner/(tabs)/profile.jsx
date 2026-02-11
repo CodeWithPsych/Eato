@@ -1,13 +1,13 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  Image,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
 import { images } from "@/constants";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Profile() {
   const showComingSoon = () => {
@@ -22,7 +22,7 @@ export default function Profile() {
       className="flex-1 bg-neutral-50 px-4 pt-6 pb-24"
       contentContainerStyle={{ paddingBottom: 120 }}
     >
-      <Text className="text-lg font-semibold text-neutral-800 mb-4">
+      <Text className="text-lg font-quicksand-semibold text-neutral-800 mb-4">
         Profile Settings
       </Text>
 
@@ -30,7 +30,7 @@ export default function Profile() {
       <View className="bg-white rounded-2xl p-4 mb-4 border border-neutral-100">
         <View className="flex-row items-center mb-3">
           <Image source={images.restaurant} className="w-5 h-5 mr-2" />
-          <Text className="text-neutral-800 font-semibold">
+          <Text className="text-neutral-800 font-quicksand-semibold">
             Restaurant Information
           </Text>
         </View>
@@ -46,7 +46,7 @@ export default function Profile() {
           onPress={showComingSoon}
           className="bg-purple-600 py-3 rounded-xl"
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-quicksand-medium">
             Update Restaurant Name
           </Text>
         </TouchableOpacity>
@@ -56,7 +56,7 @@ export default function Profile() {
       <View className="bg-white rounded-2xl p-4 mb-4 border border-neutral-100">
         <View className="flex-row items-center mb-3">
           <Image source={images.lock} className="w-5 h-5 mr-2" />
-          <Text className="text-neutral-800 font-semibold">
+          <Text className="text-neutral-800 font-quicksand-semibold">
             Change Password
           </Text>
         </View>
@@ -104,7 +104,7 @@ export default function Profile() {
           onPress={showComingSoon}
           className="bg-purple-600 py-3 rounded-xl"
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-quicksand-medium">
             Update Password
           </Text>
         </TouchableOpacity>
@@ -115,7 +115,7 @@ export default function Profile() {
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center">
             <Image source={images.chef} className="w-5 h-5 mr-2" />
-            <Text className="text-neutral-800 font-semibold">
+            <Text className="text-neutral-800 font-quicksand-semibold">
               Chef Accounts
             </Text>
           </View>
@@ -132,7 +132,7 @@ export default function Profile() {
         <View className="bg-neutral-50 border border-neutral-200 rounded-xl p-3 mb-3">
           <View className="flex-row justify-between">
             <View>
-              <Text className="text-neutral-800 font-medium">Chef Ahmed</Text>
+              <Text className="text-neutral-800 font-quicksand-medium">Chef Ahmed</Text>
               <Text className="text-neutral-500 text-sm">@chef001</Text>
             </View>
 

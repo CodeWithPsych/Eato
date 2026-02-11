@@ -75,15 +75,6 @@ const Orders = () => {
           </View>
         </View>
 
-        {/* Ready Button */}
-        {order.status === "accepted" && (
-          <TouchableOpacity
-            onPress={() => markOrderReady(order.id)}
-            className="bg-blue-600 py-3 mt-4 rounded-xl items-center"
-          >
-            <Text className="text-white font-semibold">Mark as Ready</Text>
-          </TouchableOpacity>
-        )}
       </View>
     );
   };
