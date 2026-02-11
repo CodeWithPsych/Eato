@@ -93,7 +93,7 @@ const Orders = () => {
             }}
           >
             <Image
-              source={images.emptyState} // your empty state image
+              source={images.emptyState} 
               style={{
                 width: 200,
                 height: 200,

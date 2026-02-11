@@ -1,12 +1,5 @@
 import { images } from "@/constants";
-import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 
 export default function OwnerDashboard() {
   const todayStats = {
@@ -55,9 +48,10 @@ export default function OwnerDashboard() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-neutral-50  pt-6 pb-24"  contentContainerStyle={{ paddingBottom: 120 }}>
-    
-
+    <ScrollView
+      className="flex-1 bg-neutral-50  pt-6 pb-24"
+      contentContainerStyle={{ paddingBottom: 120 }}
+    >
       {/* Stats Cards */}
       <View className="mb-6 px-5 ">
         {/* First Row */}
@@ -68,11 +62,13 @@ export default function OwnerDashboard() {
                 label: "Total Sales",
                 value: `Rs ${todayStats.totalSales.toLocaleString()}`,
                 bg: "bg-emerald-500",
+                sub: "Today's Revenue",
                 icon: images.dollar,
               },
               {
                 label: "Total Orders",
                 value: todayStats.totalOrders,
+                sub: "Today's Orders",
                 bg: "bg-indigo-500",
                 icon: images.cart,
               },
@@ -89,7 +85,7 @@ export default function OwnerDashboard() {
                     tintColor="white"
                     className="w-5 h-5"
                   />
-                  <Text className="text-sm text-white opacity-90">
+                  <Text className="text-sm text-white opacity-90 font-quicksand-semibold">
                     {card.label}
                   </Text>
                 </View>
@@ -110,7 +106,6 @@ export default function OwnerDashboard() {
         <View className="flex-row justify-between">
           {[0, 1].map((index) => {
             const card = [
-
               {
                 label: "Pending",
                 value: todayStats.pendingOrders,
@@ -138,7 +133,7 @@ export default function OwnerDashboard() {
                     tintColor="white"
                     className="w-5 h-5"
                   />
-                  <Text className="text-sm text-white opacity-90">
+                  <Text className="text-sm text-white opacity-90 font-quicksand-semibold">
                     {card.label}
                   </Text>
                 </View>
@@ -160,7 +155,7 @@ export default function OwnerDashboard() {
       <View className="bg-white rounded-2xl px-5 p-5 border border-neutral-100 mb-6">
         <View className="flex-row items-center gap-2 mb-4">
           <Image source={images.star} tintColor="#FACC15" className="w-5 h-5" />
-          <Text className="text-lg font-semibold text-neutral-800">
+          <Text className="text-lg font-quicksand-semibold text-neutral-800">
             Top Selling Items
           </Text>
         </View>
@@ -191,10 +186,14 @@ export default function OwnerDashboard() {
       </View>
 
       {/* Recent Orders */}
-        <View className="bg-white rounded-2xl px-5 p-5 border border-neutral-100 mb-6">
+      <View className="bg-white rounded-2xl px-5 p-5 border border-neutral-100 mb-6">
         <View className="flex-row items-center gap-2 mb-4">
-          <Image source={images.clock} tintColor="black" className="w-5 h-5" />
-          <Text className="text-lg font-semibold text-neutral-800">
+          <Image
+            source={images.clockTwo}
+            tintColor="black"
+            className="w-5 h-5"
+          />
+          <Text className="text-lg font-quicksand-semibold text-neutral-800">
             Recent Orders
           </Text>
         </View>
