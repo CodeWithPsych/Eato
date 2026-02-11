@@ -1,6 +1,6 @@
 import { images } from "@/constants";
-import { Tabs } from "expo-router";
-import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
+import { router, Tabs } from "expo-router";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 const TabIcon = ({ icon, title, focused }) => (
   <View className="items-center justify-center pt-6">
@@ -25,7 +25,7 @@ const OwnerHeader = () => (
   <View className="p-6 bg-purple-600 rounded-b-2xl">
     <View className="flex-row items-center justify-between">
       <View className="flex-row items-center gap-4">
-        <TouchableOpacity onPress={() => Alert.alert("onBack pressed")}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Image
             source={images.arrowBack}
             className="w-6 h-6"
@@ -42,9 +42,12 @@ const OwnerHeader = () => (
           </Text>
         </View>
       </View>
-      <View className="bg-purple-400 p-3 rounded-full">
+      <TouchableOpacity
+        onPress={() => router.push("/owner/(tabs)/profile")}
+        className="bg-purple-400 p-3 rounded-full"
+      >
         <Image source={images.user2} className="w-6 h-6" tintColor="white" />
-      </View>
+      </TouchableOpacity>
     </View>
   </View>
 );
