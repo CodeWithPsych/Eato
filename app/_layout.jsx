@@ -2,6 +2,8 @@ import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
 import { StatusBar, useColorScheme } from "react-native";
+import { Provider } from "react-redux";
+import store from "../constants/store";
 import "./global.css";
 
 SplashScreen.preventAutoHideAsync();
@@ -9,7 +11,6 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-
 
   const [fontsLoaded, error] = useFonts({
     "Quicksand-Bold": require("../assets/fonts/Quicksand-Bold.ttf"),
@@ -25,14 +26,15 @@ export default function RootLayout() {
   }, [fontsLoaded, error]);
 
   if (!fontsLoaded) return null;
-
-   return (
+  return (
     <>
-      <StatusBar
-        barStyle={isDark ? "light-content" : "dark-content"}
-        backgroundColor={isDark ? "#000000" : "#ffffff"}
-      />
-      <Stack screenOptions={{ headerShown: false }} />
+      <Provider store={store}>
+        <StatusBar
+          barStyle={isDark ? "light-content" : "dark-content"}
+          backgroundColor={isDark ? "#000000" : "#ffffff"}
+        />
+        <Stack screenOptions={{ headerShown: false }} />
+      </Provider>
     </>
   );
 }

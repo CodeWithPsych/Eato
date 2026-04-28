@@ -1,19 +1,46 @@
-import SearchBar from "@/components/SearchBar";
+import CartButton from "@/components/CartButton";
 import Filter from "@/components/Filter";
 import MenuCart from "@/components/MenuCart";
-import CartButton from "@/components/CartButton";
-import { categories } from "@/constants";
+import SearchBar from "@/components/SearchBar";
 import cn from "clsx";
+import { useEffect } from "react";
 import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
+
+import {
+  fetchCategoriesAsync,
+  fetchMenuByCategoryAsync,
+  selectCategories,
+  selectMenu,
+  selectSelectedCategory,
+  setCategory,
+} from "@/services/customerSlice";
 
 const Menu = () => {
-const data = categories;
+  const dispatch = useDispatch();
+
+  // ✅ Redux state
+  const categories = useSelector(selectCategories);
+  const menu = useSelector(selectMenu);
+  const selectedCategory = useSelector(selectSelectedCategory);
+
+  // ✅ Load data on mount
+  useEffect(() => {
+    dispatch(fetchCategoriesAsync());
+    dispatch(fetchMenuByCategoryAsync("All"));
+  }, []);
+
+  // ✅ Handle category change
+  const handleCategoryChange = (category) => {
+    dispatch(setCategory(category));
+    dispatch(fetchMenuByCategoryAsync(category));
+  };
 
   return (
     <SafeAreaView className="bg-orange-100 h-full">
       <FlatList
-        data={data}
+        data={menu}
         renderItem={({ item, index }) => {
           const isLeftColumn = index % 2 === 0;
 
@@ -21,7 +48,7 @@ const data = categories;
             <View
               className={cn(
                 "flex-1 max-w-[48%]",
-                !isLeftColumn ? "mt-10" : "mt-0"
+                !isLeftColumn ? "mt-10" : "mt-0",
               )}
             >
               <MenuCart item={item} />
@@ -37,7 +64,7 @@ const data = categories;
           <View className="my-5 gap-5">
             {/* Header */}
             <View className="flex-between flex-row w-full">
-              <View className="flex-start">
+              <View>
                 <Text className="font-quicksand-bold text-xl uppercase text-primary">
                   Menu
                 </Text>
@@ -49,7 +76,13 @@ const data = categories;
             </View>
 
             <SearchBar />
-            <Filter categories={categories} />
+
+            {/* ✅ Pass dynamic categories */}
+            <Filter
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onSelectCategory={handleCategoryChange}
+            />
           </View>
         )}
       />

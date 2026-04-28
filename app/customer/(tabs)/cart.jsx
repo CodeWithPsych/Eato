@@ -66,10 +66,10 @@ const Cart = () => {
             }}
           >
             <Image
-              source={images.emptyState} 
+              source={images.emptyState}
               style={{
-                width: 200, 
-                height: 200, 
+                width: 200,
+                height: 200,
                 resizeMode: "contain",
               }}
             />

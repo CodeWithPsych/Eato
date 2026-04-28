@@ -1,15 +1,27 @@
 import cn from "clsx";
-import { useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+
+import {
+  fetchMenuByCategoryAsync,
+  selectSelectedCategory,
+  setCategory,
+} from "@/services/customerSlice";
 
 const Filter = ({ categories = [] }) => {
-  const [active, setActive] = useState("all");
+  const dispatch = useDispatch();
+  const active = useSelector(selectSelectedCategory);
 
-  const data = [{ id: "all", name: "All" }, ...categories];
+  // 🔥 Convert ["Pizza","Burger"] → [{id:"Pizza", name:"Pizza"}]
+  const data = categories.map((cat) => ({
+    id: cat,
+    name: cat,
+  }));
+  console.log(data);
 
-  const handlePress = (id, name) => {
-    setActive(id);
-    console.log("Selected category:", { id, name });
+  const handlePress = (category) => {
+    dispatch(setCategory(category));
+    dispatch(fetchMenuByCategoryAsync(category));
   };
 
   return (
@@ -17,25 +29,23 @@ const Filter = ({ categories = [] }) => {
       <FlatList
         data={data}
         horizontal
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="gap-2"
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => handlePress(item.id, item.name)}
+            onPress={() => handlePress(item.name)}
             className={cn(
               "px-4 py-2 rounded-full",
-              active === item.id
+              active === item.name
                 ? "bg-orange-600"
-                : "bg-orange-50 border-2 border-orange-200 text-center"
+                : "bg-orange-50 border-2 border-orange-200",
             )}
           >
             <Text
               className={cn(
-                "text-sm whitespace-nowrap",
-                active === item.id
-                  ? "text-white"
-                  : "text-neutral-700"
+                "text-sm",
+                active === item.name ? "text-white" : "text-neutral-700",
               )}
             >
               {item.name}

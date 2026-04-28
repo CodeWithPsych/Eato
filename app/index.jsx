@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+
 export default function Index() {
   return (
     <SafeAreaView className="flex-1 bg-[#FFF4EC] px-5">

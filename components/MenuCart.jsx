@@ -1,13 +1,14 @@
+import { getImage } from "@/constants/getImage";
+import { useCartStore } from "@/store/cart.store";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Platform,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from "react-native";
-import { useCartStore } from "@/store/cart.store";
 
 const MenuCart = ({ item }) => {
   const { id, image, name, price } = item;
@@ -17,7 +18,9 @@ const MenuCart = ({ item }) => {
   return (
     <TouchableOpacity
       className="bg-orange-50 rounded-2xl border-orange-200  p-4 items-center shadow-md w-40 h-44"
-      style={Platform.OS === "android" ? { elevation: 5, shadowColor: "#000" } : {}}
+      style={
+        Platform.OS === "android" ? { elevation: 5, shadowColor: "#000" } : {}
+      }
       onPress={() => console.log("Card pressed:", name)}
     >
       {loading && (
@@ -29,7 +32,7 @@ const MenuCart = ({ item }) => {
       )}
 
       <Image
-        source={image}
+        source={getImage(image)}
         className="size-36 absolute -top-16"
         resizeMode="contain"
         onLoadEnd={() => setLoading(false)}
