@@ -1,117 +1,73 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchOrdersByRestaurantAsync,
+  updateOrderStatusAsync,
+  selectRestaurantOrders,
+  selectRestOrdersStatus,
+} from "@/services/orderSlice";
 
 export default function Orders() {
+  const dispatch = useDispatch();
+  const allOrders = useSelector(selectRestaurantOrders);
+  const ordersStatus = useSelector(selectRestOrdersStatus);
+
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedOrder, setExpandedOrder] = useState(null);
 
- const allOrders = [
-  {
-    id: "ORD001",
-    table: 5,
-    items: 2,
-    total: 837,
-    status: "served",
-    time: "10:30 AM",
-  },
-  {
-    id: "ORD002",
-    table: 12,
-    items: 2,
-    total: 635,
-    status: "served",
-    time: "10:15 AM",
-  },
-  {
-    id: "ORD003",
-    table: 4,
-    items: 1,
-    total: 418,
-    status: "served",
-    time: "09:50 AM",
-  },
-  {
-    id: "ORD004",
-    table: 7,
-    items: 3,
-    total: 1120,
-    status: "served",
-    time: "09:30 AM",
-  },
-  {
-    id: "ORD005",
-    table: 9,
-    items: 2,
-    total: 560,
-    status: "served",
-    time: "09:15 AM",
-  },
-  {
-    id: "ORD006",
-    table: 2,
-    items: 4,
-    total: 1345,
-    status: "served",
-    time: "08:55 AM",
-  },
+  useEffect(() => {
+    dispatch(fetchOrdersByRestaurantAsync("res_001"));
+  }, [dispatch]);
 
-  //  Pending (3)
-  {
-    id: "ORD007",
-    table: 8,
-    items: 3,
-    total: 1130,
-    status: "pending",
-    time: "11:28 AM",
-  },
-  {
-    id: "ORD008",
-    table: 3,
-    items: 1,
-    total: 418,
-    status: "pending",
-    time: "11:29 AM",
-  },
-  {
-    id: "ORD009",
-    table: 15,
-    items: 2,
-    total: 469,
-    status: "served",
-    time: "11:35 AM",
-  },
-  {
-    id: "ORD010",
-    table: 6,
-    items: 2,
-    total: 720,
-    status: "served",
-    time: "08:30 AM",
-  },
-];
+  const pendingCount = allOrders.filter(
+    (o) => o.status === "Pending" || o.status === "pending"
+  ).length;
 
+  const servedCount = allOrders.filter(
+    (o) => o.status === "Delivered" || o.status === "served" || o.status === "ready"
+  ).length;
 
-  const pendingCount = allOrders.filter(o => o.status === "pending").length;
-  const servedCount = allOrders.filter(o => o.status === "served").length;
-  const totalRevenue = allOrders.reduce((sum, o) => sum + o.total, 0);
+  const totalRevenue = allOrders.reduce((sum, o) => sum + (o.totalAmount ?? o.total ?? 0), 0);
 
-  const filteredOrders = allOrders.filter(order => {
+  const normaliseStatus = (s = "") => s.toLowerCase();
+
+  const filteredOrders = allOrders.filter((order) => {
+    const status = normaliseStatus(order.status);
+
     const matchesStatus =
-      filterStatus === "all" || order.status === filterStatus;
+      filterStatus === "all" ||
+      (filterStatus === "pending" && (status === "pending")) ||
+      (filterStatus === "served" &&
+        (status === "delivered" || status === "served" || status === "ready"));
 
+    const id = order.orderId ?? order.id ?? "";
     const matchesSearch =
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      `table ${order.table}`.toLowerCase().includes(searchQuery.toLowerCase());
+      id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      `table ${order.tableNumber ?? ""}`.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesStatus && matchesSearch;
   });
+
+  const handleStatusChange = (orderId, newStatus) => {
+    dispatch(updateOrderStatusAsync({ orderId, status: newStatus }));
+  };
+
+  if (ordersStatus === "loading") {
+    return (
+      <View className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="large" color="#7C3AED" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -121,30 +77,22 @@ export default function Orders() {
       {/* Summary Cards */}
       <View className="flex-row justify-between mb-5">
         <View className="bg-orange-100 rounded-xl p-4 w-[32%] items-center">
-          <Text className="text-orange-600 text-xl font-bold">
-            {pendingCount}
-          </Text>
+          <Text className="text-orange-600 text-xl font-bold">{pendingCount}</Text>
           <Text className="text-orange-700 text-xs">Pending</Text>
         </View>
-
         <View className="bg-green-100 rounded-xl p-4 w-[32%] items-center">
-          <Text className="text-green-600 text-xl font-bold">
-            {servedCount}
-          </Text>
+          <Text className="text-green-600 text-xl font-bold">{servedCount}</Text>
           <Text className="text-green-700 text-xs">Served</Text>
         </View>
-
         <View className="bg-purple-100 rounded-xl p-4 w-[32%] items-center">
-          <Text className="text-purple-600 text-lg font-bold">
-            Rs {totalRevenue}
-          </Text>
+          <Text className="text-purple-600 text-lg font-bold">Rs {totalRevenue}</Text>
           <Text className="text-purple-700 text-xs">Total</Text>
         </View>
       </View>
 
       {/* Search */}
       <TextInput
-        placeholder="Search by order ID..."
+        placeholder="Search by order ID or table..."
         value={searchQuery}
         onChangeText={setSearchQuery}
         className="bg-white rounded-xl px-4 py-3 mb-4 border border-neutral-200"
@@ -152,7 +100,7 @@ export default function Orders() {
 
       {/* Filters */}
       <View className="flex-row mb-5">
-        {["all", "pending", "served"].map(status => (
+        {["all", "pending", "served"].map((status) => (
           <TouchableOpacity
             key={status}
             onPress={() => setFilterStatus(status)}
@@ -178,73 +126,108 @@ export default function Orders() {
       </View>
 
       {/* Orders */}
-      {filteredOrders.map(order => (
-        <View
-          key={order.id}
-          className={`rounded-2xl mb-4 border-2 ${
-            order.status === "pending"
-              ? "border-orange-200 bg-orange-50"
-              : "border-green-200 bg-green-50"
-          }`}
-        >
-          {/* Header */}
-          <TouchableOpacity
-            onPress={() =>
-              setExpandedOrder(
-                expandedOrder === order.id ? null : order.id
-              )
-            }
-            className="p-4"
-          >
-            <View className="flex-row justify-between items-center">
-              <View>
-                <View className="flex-row items-center gap-2">
-                  <Text className="font-semibold">{order.id}</Text>
-                  <Text
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      order.status === "pending"
-                        ? "bg-orange-200 text-orange-700"
-                        : "bg-green-200 text-green-700"
-                    }`}
-                  >
-                    {order.status}
+      {filteredOrders.length === 0 ? (
+        <View className="items-center py-16">
+          <Text className="text-neutral-400 font-quicksand-medium">No orders found</Text>
+        </View>
+      ) : (
+        filteredOrders.map((order) => {
+          const orderId = order.orderId ?? order.id;
+          const status = normaliseStatus(order.status);
+          const isServed =
+            status === "delivered" || status === "served" || status === "ready";
+
+          return (
+            <View
+              key={orderId}
+              className={`rounded-2xl mb-4 border-2 ${
+                isServed
+                  ? "border-green-200 bg-green-50"
+                  : "border-orange-200 bg-orange-50"
+              }`}
+            >
+              {/* Header row — tap to expand */}
+              <TouchableOpacity
+                onPress={() =>
+                  setExpandedOrder(expandedOrder === orderId ? null : orderId)
+                }
+                className="p-4"
+              >
+                <View className="flex-row justify-between items-center">
+                  <View>
+                    <View className="flex-row items-center gap-2">
+                      <Text className="font-semibold">{orderId}</Text>
+                      <Text
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          isServed
+                            ? "bg-green-200 text-green-700"
+                            : "bg-orange-200 text-orange-700"
+                        }`}
+                      >
+                        {order.status}
+                      </Text>
+                    </View>
+                    <Text className="text-sm text-neutral-600 mt-1">
+                      Table {order.tableNumber ?? "—"} •{" "}
+                      {order.time ?? order.date ?? ""}
+                    </Text>
+                  </View>
+                  <Text className="text-neutral-600">
+                    {expandedOrder === orderId ? "▲" : "▼"}
                   </Text>
                 </View>
-                <Text className="text-sm text-neutral-600 mt-1">
-                  Table {order.table} • {order.time}
-                </Text>
-              </View>
+              </TouchableOpacity>
 
-              <Text className="text-neutral-600">
-                {expandedOrder === order.id ? "▲" : "▼"}
-              </Text>
-            </View>
-          </TouchableOpacity>
+              {/* Expanded detail */}
+              {expandedOrder === orderId ? (
+                <View className="px-4 pb-4 border-t border-neutral-200">
+                  {(order.items ?? []).map((item, idx) => (
+                    <Text key={idx} className="text-sm text-neutral-700 mb-1">
+                      {item.quantity}x {item.name} — Rs {item.price * item.quantity}
+                    </Text>
+                  ))}
+                  <Text className="text-purple-600 font-semibold mt-2">
+                    Total: Rs {order.totalAmount ?? order.total ?? 0}
+                  </Text>
 
-          {/* Expanded */}
-          {expandedOrder === order.id ? (
-            <View className="px-4 pb-4 border-t border-neutral-200">
-              <Text className="text-sm text-neutral-600 mb-2">
-                {order.items} item(s)
-              </Text>
-              <Text className="text-purple-600 font-semibold">
-                Total: Rs {order.total}
-              </Text>
+                  {/* Quick status actions */}
+                  {!isServed && (
+                    <View className="flex-row gap-2 mt-3">
+                      <TouchableOpacity
+                        onPress={() => handleStatusChange(orderId, "Delivered")}
+                        className="flex-1 bg-green-600 py-2 rounded-xl"
+                      >
+                        <Text className="text-white text-center text-sm font-quicksand-semibold">
+                          Mark Delivered
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleStatusChange(orderId, "Cancelled")}
+                        className="flex-1 bg-red-100 py-2 rounded-xl"
+                      >
+                        <Text className="text-red-600 text-center text-sm font-quicksand-semibold">
+                          Cancel
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <View className="px-4 pb-4">
+                  <View className="flex-row justify-between">
+                    <Text className="text-sm text-neutral-600">
+                      {(order.items ?? []).length} item(s)
+                    </Text>
+                    <Text className="text-purple-600 font-semibold">
+                      Rs {order.totalAmount ?? order.total ?? 0}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
-          ) : (
-            <View className="px-4 pb-4">
-              <View className="flex-row justify-between">
-                <Text className="text-sm text-neutral-600">
-                  {order.items} item(s)
-                </Text>
-                <Text className="text-purple-600 font-semibold">
-                  Rs {order.total}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      ))}
+          );
+        })
+      )}
     </ScrollView>
   );
 }

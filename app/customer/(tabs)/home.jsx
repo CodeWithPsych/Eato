@@ -1,15 +1,43 @@
 import Categories from "@/components/Categories";
 import FeaturedItems from "@/components/FeaturedItems";
 import { images } from "@/constants";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { useEffect } from "react";
+import { FlatList, Image, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { useCartStore } from "@/store/cart.store";
+import {
+  fetchRestaurantDetailsAsync,
+  fetchCategoriesAsync,
+  fetchMenuByCategoryAsync,
+  selectRestaurantDetails,
+  selectRestaurantStatus,
+} from "@/services/customerSlice";
 
 export default function Home() {
-  const { table } = useLocalSearchParams();
+  const { table, restaurantId } = useLocalSearchParams();
+  const dispatch = useDispatch();
+  const restaurantDetails = useSelector(selectRestaurantDetails);
+  const restaurantStatus = useSelector(selectRestaurantStatus);
+  const { addItem } = useCartStore();
+
+  // Fetch restaurant info + initial menu whenever restaurantId changes
+  useEffect(() => {
+    if (!restaurantId) return;
+    dispatch(fetchRestaurantDetailsAsync(restaurantId));
+    dispatch(fetchCategoriesAsync(restaurantId));
+    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: "All" }));
+  }, [dispatch, restaurantId]);
 
   const handleAddToCart = (item) => {
-    console.log("Added to cart:", item.title);
+    addItem({
+      id: item.id,
+      name: item.title ?? item.name,
+      price: item.price,
+      image: item.image,
+      customizations: [],
+    });
   };
 
   const Header = () => (
@@ -27,24 +55,42 @@ export default function Home() {
         </Text>
       </View>
 
-      {/* Restaurant Name */}
-      <TouchableOpacity className="mt-1">
-        <Text className="text-white text-xl font-quicksand-bold">
-          The Golden Spoon
-        </Text>
-      </TouchableOpacity>
+      {/* Restaurant Name — live from API */}
+      {restaurantStatus === "loading" || !restaurantDetails ? (
+        <ActivityIndicator color="white" className="mt-2" />
+      ) : (
+        <>
+          <TouchableOpacity className="mt-1">
+            <Text className="text-white text-xl font-quicksand-bold">
+              {restaurantDetails.name}
+            </Text>
+          </TouchableOpacity>
 
-      {/* Rating */}
-      <View className="mt-2 flex-row gap-2 items-center">
-        <Image
-          source={images.star}
-          className="size-5"
-          tintColor="yellow"
-        />
-        <Text className="text-white/80">
-          4.5 (120+ reviews)
-        </Text>
-      </View>
+          <View className="mt-2 flex-row gap-2 items-center">
+            <Image source={images.star} className="size-5" tintColor="yellow" />
+            <Text className="text-white/80">
+              {restaurantDetails.rating ?? "N/A"}{" "}
+              {restaurantDetails.reviewCount
+                ? `(${restaurantDetails.reviewCount}+ reviews)`
+                : ""}
+            </Text>
+          </View>
+
+          {restaurantDetails.location ? (
+            <View className="mt-1 flex-row gap-2 items-center">
+              <Image
+                source={images.location}
+                className="size-4"
+                resizeMode="contain"
+                tintColor="rgba(255,255,255,0.7)"
+              />
+              <Text className="text-white/70 text-sm">
+                {restaurantDetails.location}
+              </Text>
+            </View>
+          ) : null}
+        </>
+      )}
     </View>
   );
 
@@ -55,8 +101,12 @@ export default function Home() {
         keyExtractor={(item) => item.id}
         renderItem={() => (
           <View>
-            <Categories />
-            <FeaturedItems onAddToCart={handleAddToCart} />
+            {/* Pass restaurantId down so Categories/FeaturedItems use the right data */}
+            <Categories restaurantId={restaurantId} />
+            <FeaturedItems
+              restaurantId={restaurantId}
+              onAddToCart={handleAddToCart}
+            />
           </View>
         )}
         ListHeaderComponent={Header}

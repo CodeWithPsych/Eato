@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
-  fetchCategories,
-  fetchMenu,
-  fetchMenuByCategory,
-  fetchRestaurantDetails,
+    acceptOrder,
+    fetchKitchenOrders,
+    markOrderReady,
+    rejectOrder,
+    updatePrepTime,
 } from './customerApi';
 
 // Default restaurant — update dynamically when multi-restaurant support is added
