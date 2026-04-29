@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:3000';
+const BASE = "http://localhost:3000";
 
 export function fetchAllRestaurants() {
   return new Promise(async (resolve, reject) => {
@@ -7,6 +7,7 @@ export function fetchAllRestaurants() {
       const data = await res.json();
       // Strip menu to keep the payload light
       const list = data.map(({ menu: _omit, ...rest }) => rest);
+      console.log(list);
       resolve({ data: list });
     } catch (error) {
       reject(error);
@@ -20,7 +21,8 @@ export function fetchRestaurantById(restaurantId) {
   return new Promise(async (resolve, reject) => {
     try {
       const res = await fetch(`${BASE}/restaurants/${restaurantId}`);
-      if (!res.ok) return reject({ error: `Restaurant ${restaurantId} not found` });
+      if (!res.ok)
+        return reject({ error: `Restaurant ${restaurantId} not found` });
       const data = await res.json();
       resolve({ data });
     } catch (error) {
