@@ -1,0 +1,599 @@
+{
+  "restaurants": [
+    {
+      "id": "res_001",
+      "name": "Foodie's Hub",
+      "location": "Karachi",
+      "rating": 4.5,
+
+      "menu": [
+        {
+          "id": "item_1",
+          "name": "Classic Burger Meal",
+          "category": "Meals",
+          "image": "burgerOne",
+          "price": 1000,
+          "rating": 4.5,
+          "isAvailable": true
+        },
+        {
+          "id": "item_2",
+          "name": "Double Beef Burger",
+          "category": "Burger",
+          "image": "burgerTwo",
+          "price": 500,
+          "rating": 4.6,
+          "isAvailable": true
+        },
+        {
+          "id": "item_3",
+          "name": "Cheese Pizza",
+          "category": "Pizza",
+          "image": "pizzaOne",
+          "price": 1600,
+          "rating": 4.7,
+          "isAvailable": true
+        },
+        {
+          "id": "item_4",
+          "name": "Mozarella Sticks",
+          "category": "Snacks",
+          "image": "mozarellaSticks",
+          "price": 300,
+          "rating": 4.4,
+          "isAvailable": true
+        },
+        {
+          "id": "item_5",
+          "name": "Chicken Burrito",
+          "category": "Burrito",
+          "image": "buritto",
+          "price": 700,
+          "rating": 4.5,
+          "isAvailable": true
+        },
+        {
+          "id": "item_6",
+          "name": "French Fries",
+          "category": "Fries",
+          "image": "fries",
+          "price": 200,
+          "rating": 4.3,
+          "isAvailable": true
+        }
+      ],
+
+      "categories": ["Meals", "Burger", "Pizza", "Snacks", "Burrito", "Fries"]
+    },
+    {
+      "id": "res_002",
+      "name": "Spice Garden",
+      "location": "Lahore",
+      "rating": 4.3,
+      "deliveryTime": "25-35 mins",
+      "categories": ["Desi", "BBQ", "Drinks"],
+      "menu": [
+        {
+          "id": "item_4",
+          "name": "Chicken Biryani",
+          "category": "Desi",
+          "price": 300,
+          "rating": 4.8,
+          "reviews": 500,
+          "isAvailable": true
+        },
+        {
+          "id": "item_5",
+          "name": "Chicken Karahi",
+          "category": "Desi",
+          "price": 1200,
+          "rating": 4.7,
+          "reviews": 320,
+          "isAvailable": true
+        },
+        {
+          "id": "item_6",
+          "name": "Seekh Kebab",
+          "category": "BBQ",
+          "price": 600,
+          "rating": 4.5,
+          "reviews": 200,
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "id": "res_003",
+      "name": "Sweet Treats",
+      "location": "Islamabad",
+      "rating": 4.6,
+      "deliveryTime": "20-30 mins",
+      "categories": ["Desserts", "Drinks"],
+      "menu": [
+        {
+          "id": "item_7",
+          "name": "Chocolate Cake",
+          "category": "Desserts",
+          "price": 450,
+          "rating": 4.9,
+          "reviews": 150,
+          "isAvailable": true
+        },
+        {
+          "id": "item_8",
+          "name": "Ice Cream Sundae",
+          "category": "Desserts",
+          "price": 300,
+          "rating": 4.6,
+          "reviews": 90,
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "id": "res_004",
+      "name": "Burger Lab",
+      "location": "Lahore",
+      "rating": 4.7,
+      "categories": ["Burger", "Fries", "Drinks"],
+      "menu": [
+        {
+          "id": "item_101",
+          "name": "Zinger Burger",
+          "category": "Burger",
+          "image": "zingerBurger",
+          "price": 550,
+          "rating": 4.6,
+          "isAvailable": true
+        },
+        {
+          "id": "item_102",
+          "name": "Beef Smash Burger",
+          "category": "Burger",
+          "image": "beefBurger",
+          "price": 750,
+          "rating": 4.8,
+          "isAvailable": true
+        },
+        {
+          "id": "item_103",
+          "name": "Loaded Fries",
+          "category": "Fries",
+          "image": "loadedFries",
+          "price": 400,
+          "rating": 4.5,
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "id": "res_005",
+      "name": "BBQ Nights",
+      "location": "Karachi",
+      "rating": 4.4,
+      "categories": ["BBQ", "Desi", "Drinks"],
+      "menu": [
+        {
+          "id": "item_104",
+          "name": "Chicken Tikka",
+          "category": "BBQ",
+          "image": "tikka",
+          "price": 450,
+          "rating": 4.6,
+          "isAvailable": true
+        },
+        {
+          "id": "item_105",
+          "name": "Mutton Karahi",
+          "category": "Desi",
+          "image": "karahi",
+          "price": 1800,
+          "rating": 4.7,
+          "isAvailable": true
+        },
+        {
+          "id": "item_106",
+          "name": "Raita",
+          "category": "Desi",
+          "image": "raita",
+          "price": 100,
+          "rating": 4.3,
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "id": "res_006",
+      "name": "Pizza Point",
+      "location": "Islamabad",
+      "rating": 4.5,
+      "categories": ["Pizza", "Snacks", "Drinks"],
+      "menu": [
+        {
+          "id": "item_107",
+          "name": "Pepperoni Pizza",
+          "category": "Pizza",
+          "image": "pepperoni",
+          "price": 1700,
+          "rating": 4.7,
+          "isAvailable": true
+        },
+        {
+          "id": "item_108",
+          "name": "Chicken Fajita Pizza",
+          "category": "Pizza",
+          "image": "fajita",
+          "price": 1600,
+          "rating": 4.6,
+          "isAvailable": true
+        },
+        {
+          "id": "item_109",
+          "name": "Garlic Bread",
+          "category": "Snacks",
+          "image": "garlicBread",
+          "price": 300,
+          "rating": 4.4,
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "id": "res_007",
+      "name": "Chai & Chaska",
+      "location": "Lahore",
+      "rating": 4.3,
+      "categories": ["Tea", "Snacks", "Desserts"],
+      "menu": [
+        {
+          "id": "item_110",
+          "name": "Doodh Patti Chai",
+          "category": "Tea",
+          "image": "chai",
+          "price": 120,
+          "rating": 4.8,
+          "isAvailable": true
+        },
+        {
+          "id": "item_111",
+          "name": "Samosa",
+          "category": "Snacks",
+          "image": "samosa",
+          "price": 80,
+          "rating": 4.5,
+          "isAvailable": true
+        },
+        {
+          "id": "item_112",
+          "name": "Gulab Jamun",
+          "category": "Desserts",
+          "image": "gulabJamun",
+          "price": 200,
+          "rating": 4.6,
+          "isAvailable": true
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "user_001",
+      "name": "Arham Saleem",
+      "email": "arham@example.com",
+      "phone": "03001234567",
+      "addresses": [
+        {
+          "id": "addr_1",
+          "city": "Karachi",
+          "area": "Gulshan",
+          "details": "House 123, Street 5"
+        }
+      ]
+    },
+    {
+      "id": "user_002",
+      "name": "Ali Khan",
+      "email": "ali@example.com",
+      "phone": "03111234567",
+      "addresses": [
+        {
+          "id": "addr_2",
+          "city": "Lahore",
+          "area": "DHA",
+          "details": "Block A, House 45"
+        }
+      ]
+    },
+    {
+      "id": "user_003",
+      "name": "Ahmed Raza",
+      "email": "ahmed@example.com",
+      "phone": "03211234567",
+      "addresses": []
+    },
+    {
+      "id": "user_004",
+      "name": "Usman Ali",
+      "email": "usman@example.com",
+      "phone": "03331234567",
+      "addresses": []
+    }
+  ],
+  "orders": [
+    {
+      "orderId": "ord_001",
+      "userId": "user_001",
+      "restaurantId": "res_001",
+      "items": [
+        {
+          "itemId": "item_1",
+          "name": "Margherita Pizza",
+          "quantity": 2,
+          "price": 799
+        }
+      ],
+      "totalAmount": 1598,
+      "status": "Delivered",
+      "paymentMethod": "Cash on Delivery",
+      "date": "2026-04-05"
+    },
+    {
+      "orderId": "ord_002",
+      "userId": "user_002",
+      "restaurantId": "res_002",
+      "items": [
+        {
+          "itemId": "item_4",
+          "name": "Chicken Biryani",
+          "quantity": 1,
+          "price": 300
+        },
+        {
+          "itemId": "item_6",
+          "name": "Seekh Kebab",
+          "quantity": 1,
+          "price": 600
+        }
+      ],
+      "totalAmount": 900,
+      "status": "Pending",
+      "paymentMethod": "Card",
+      "date": "2026-04-04"
+    },
+    {
+      "orderId": "ord_003",
+      "userId": "user_001",
+      "restaurantId": "res_004",
+      "items": [
+        {
+          "itemId": "item_101",
+          "name": "Zinger Burger",
+          "quantity": 2,
+          "price": 550
+        }
+      ],
+      "totalAmount": 1100,
+      "status": "Preparing",
+      "paymentMethod": "Card",
+      "date": "2026-04-06",
+      "tableNumber": 3
+    },
+    {
+      "orderId": "ord_004",
+      "userId": "user_002",
+      "restaurantId": "res_005",
+      "items": [
+        {
+          "itemId": "item_104",
+          "name": "Chicken Tikka",
+          "quantity": 1,
+          "price": 450
+        },
+        {
+          "itemId": "item_106",
+          "name": "Raita",
+          "quantity": 1,
+          "price": 100
+        }
+      ],
+      "totalAmount": 550,
+      "status": "Ready",
+      "paymentMethod": "Cash",
+      "date": "2026-04-06",
+      "tableNumber": 5
+    },
+    {
+      "orderId": "ord_005",
+      "userId": "user_001",
+      "restaurantId": "res_006",
+      "items": [
+        {
+          "itemId": "item_108",
+          "name": "Chicken Fajita Pizza",
+          "quantity": 1,
+          "price": 1600
+        }
+      ],
+      "totalAmount": 1600,
+      "status": "Pending",
+      "paymentMethod": "Card",
+      "date": "2026-04-07",
+      "tableNumber": 2
+    },
+    {
+      "orderId": "ord_006",
+      "userId": "user_002",
+      "restaurantId": "res_007",
+      "items": [
+        {
+          "itemId": "item_110",
+          "name": "Doodh Patti Chai",
+          "quantity": 2,
+          "price": 120
+        },
+        {
+          "itemId": "item_111",
+          "name": "Samosa",
+          "quantity": 4,
+          "price": 80
+        }
+      ],
+      "totalAmount": 560,
+      "status": "Served",
+      "paymentMethod": "Cash",
+      "date": "2026-04-07",
+      "tableNumber": 1
+    },
+    {
+      "orderId": "ord_007",
+      "userId": "user_001",
+      "restaurantId": "res_001",
+      "items": [
+        {
+          "itemId": "item_3",
+          "name": "Cheese Pizza",
+          "quantity": 1,
+          "price": 1600
+        }
+      ],
+      "totalAmount": 1600,
+      "status": "Cancelled",
+      "paymentMethod": "Card",
+      "date": "2026-04-08",
+      "tableNumber": 4
+    }
+  ],
+  "cart": [
+    {
+      "userId": "user_001",
+      "restaurantId": "res_004",
+      "tableNumber": 3,
+      "items": [
+        {
+          "itemId": "item_101",
+          "name": "Zinger Burger",
+          "quantity": 1,
+          "price": 550
+        },
+        {
+          "itemId": "item_103",
+          "name": "Loaded Fries",
+          "quantity": 2,
+          "price": 400
+        }
+      ],
+      "total": 1350
+    },
+    {
+      "userId": "user_002",
+      "restaurantId": "res_006",
+      "tableNumber": 2,
+      "items": [
+        {
+          "itemId": "item_107",
+          "name": "Pepperoni Pizza",
+          "quantity": 1,
+          "price": 1700
+        },
+        {
+          "itemId": "item_109",
+          "name": "Garlic Bread",
+          "quantity": 2,
+          "price": 300
+        }
+      ],
+      "total": 2300
+    },
+    {
+      "userId": "user_003",
+      "restaurantId": "res_004",
+      "tableNumber": 5,
+      "items": [
+        {
+          "itemId": "item_102",
+          "name": "Beef Smash Burger",
+          "quantity": 2,
+          "price": 750
+        }
+      ],
+      "total": 1500
+    },
+    {
+      "userId": "user_004",
+      "restaurantId": "res_005",
+      "tableNumber": 1,
+      "items": [
+        {
+          "itemId": "item_104",
+          "name": "Chicken Tikka",
+          "quantity": 1,
+          "price": 450
+        },
+        {
+          "itemId": "item_105",
+          "name": "Mutton Karahi",
+          "quantity": 1,
+          "price": 1800
+        },
+        {
+          "itemId": "item_106",
+          "name": "Raita",
+          "quantity": 2,
+          "price": 100
+        }
+      ],
+      "total": 2450
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev_001",
+      "userId": "user_001",
+      "restaurantId": "res_001",
+      "rating": 5,
+      "comment": "Amazing food and fast delivery!"
+    },
+    {
+      "id": "rev_002",
+      "userId": "user_002",
+      "restaurantId": "res_002",
+      "rating": 4,
+      "comment": "Great taste but delivery was slightly late."
+    },
+    {
+      "id": "rev_003",
+      "userId": "user_001",
+      "restaurantId": "res_004",
+      "rating": 5,
+      "comment": "Best burgers in town!"
+    },
+    {
+      "id": "rev_004",
+      "userId": "user_002",
+      "restaurantId": "res_004",
+      "rating": 4,
+      "comment": "Great taste but a bit expensive."
+    },
+    {
+      "id": "rev_005",
+      "userId": "user_001",
+      "restaurantId": "res_005",
+      "rating": 5,
+      "comment": "BBQ was perfectly cooked 🔥"
+    },
+    {
+      "id": "rev_006",
+      "userId": "user_002",
+      "restaurantId": "res_006",
+      "rating": 3,
+      "comment": "Pizza was okay, could be better."
+    },
+    {
+      "id": "rev_007",
+      "userId": "user_001",
+      "restaurantId": "res_007",
+      "rating": 5,
+      "comment": "Chai is amazing, very refreshing!"
+    }
+  ]
+}
