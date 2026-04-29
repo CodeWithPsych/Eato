@@ -1,55 +1,66 @@
-/**
- * Mock API layer for customer-facing features.
- * Returns { data: ... } to mirror real Axios response shape.
- * Swap Promise+setTimeout with real HTTP calls when backend is ready.
- */
-import data from "../constants/data.json";
+const BASE = 'http://localhost:3000';
 
-const getRestaurant = (id = "res_001") =>
-  data.restaurants.find((r) => r.id === id) ?? data.restaurants[0];
+// ── Helpers ───────────────────────────────────────────────────
+
+function getRestaurantId() {
+  // Default restaurant for the demo; swap for dynamic id when needed
+  return 'res_001';
+}
 
 // ── Menu ──────────────────────────────────────────────────────
 
-export function fetchMenu(restaurantId = "res_001") {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve({ data: getRestaurant(restaurantId).menu }), 500);
+export function fetchMenu(restaurantId = getRestaurantId()) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      const data = await response.json();
+      resolve({ data: data.menu ?? [] });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
-export function fetchMenuByCategory(
-  restaurantId = "res_001",
-  category = "All",
-) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const menu = getRestaurant(restaurantId).menu;
-      const filtered =
-        category === "All" ? menu : menu.filter((i) => i.category === category);
+export function fetchMenuByCategory(restaurantId = getRestaurantId(), category = 'All') {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      const data = await response.json();
+      const menu = data.menu ?? [];
+      const filtered = category === 'All' ? menu : menu.filter((i) => i.category === category);
       resolve({ data: filtered });
-    }, 400);
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
 // ── Categories ────────────────────────────────────────────────
 
-export function fetchCategories(restaurantId = "res_001") {
-  return new Promise((resolve) => {
-    setTimeout(
-      () => resolve({ data: getRestaurant(restaurantId).categories }),
-      300,
-    );
+export function fetchCategories(restaurantId = getRestaurantId()) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      const data = await response.json();
+      resolve({ data: data.categories ?? [] });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
-// ── Restaurant details (customer view) ───────────────────────
+// ── Restaurant details (customer view — no menu) ──────────────
 
-export function fetchRestaurantDetails(restaurantId = "res_001") {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const restaurant = getRestaurant(restaurantId);
-      if (!restaurant) return reject({ error: "Restaurant not found" });
-      const { menu: _omit, ...details } = restaurant;
+export function fetchRestaurantDetails(restaurantId = getRestaurantId()) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      const data = await response.json();
+      if (!data || !data.id) return reject({ error: 'Restaurant not found' });
+      const { menu: _omit, ...details } = data;
       resolve({ data: details });
-    }, 300);
+    } catch (error) {
+      reject(error);
+    }
   });
 }

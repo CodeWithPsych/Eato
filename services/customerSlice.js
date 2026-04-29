@@ -1,55 +1,62 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
-    fetchCategories,
-    fetchMenu,
-    fetchMenuByCategory,
-    fetchRestaurantDetails,
-} from "./customerApi";
+  fetchCategories,
+  fetchMenu,
+  fetchMenuByCategory,
+  fetchRestaurantDetails,
+} from './customerApi';
+
+// Default restaurant — update dynamically when multi-restaurant support is added
+const DEFAULT_RESTAURANT = 'res_001';
 
 // ── Async Thunks ──────────────────────────────────────────────
 
 export const fetchMenuAsync = createAsyncThunk(
-  "customer/fetchMenu",
-  async (restaurantId, { rejectWithValue }) => {
+  'customer/fetchMenu',
+  async (restaurantId = DEFAULT_RESTAURANT, { rejectWithValue }) => {
     try {
       return (await fetchMenu(restaurantId)).data;
     } catch (err) {
       return rejectWithValue(err);
     }
-  },
+  }
 );
 
+
 export const fetchMenuByCategoryAsync = createAsyncThunk(
-  "customer/fetchMenuByCategory",
-  async ({ restaurantId, category }, { rejectWithValue }) => {
+  'customer/fetchMenuByCategory',
+  async (arg, { rejectWithValue }) => {
     try {
+      const restaurantId =
+        typeof arg === 'object' ? arg.restaurantId ?? DEFAULT_RESTAURANT : DEFAULT_RESTAURANT;
+      const category = typeof arg === 'object' ? arg.category ?? 'All' : arg ?? 'All';
       return (await fetchMenuByCategory(restaurantId, category)).data;
     } catch (err) {
       return rejectWithValue(err);
     }
-  },
+  }
 );
 
 export const fetchCategoriesAsync = createAsyncThunk(
-  "customer/fetchCategories",
-  async (restaurantId, { rejectWithValue }) => {
+  'customer/fetchCategories',
+  async (restaurantId = DEFAULT_RESTAURANT, { rejectWithValue }) => {
     try {
       return (await fetchCategories(restaurantId)).data;
     } catch (err) {
       return rejectWithValue(err);
     }
-  },
+  }
 );
 
 export const fetchRestaurantDetailsAsync = createAsyncThunk(
-  "customer/fetchRestaurantDetails",
-  async (restaurantId, { rejectWithValue }) => {
+  'customer/fetchRestaurantDetails',
+  async (restaurantId = DEFAULT_RESTAURANT, { rejectWithValue }) => {
     try {
       return (await fetchRestaurantDetails(restaurantId)).data;
     } catch (err) {
       return rejectWithValue(err);
     }
-  },
+  }
 );
 
 // ── Initial State ─────────────────────────────────────────────
@@ -57,12 +64,12 @@ export const fetchRestaurantDetailsAsync = createAsyncThunk(
 const initialState = {
   menu: [],
   categories: [],
-  selectedCategory: "All",
+  selectedCategory: 'All',
   restaurantDetails: null,
   status: {
-    menu: "idle", // idle | loading | succeeded | failed
-    categories: "idle",
-    restaurant: "idle",
+    menu: 'idle',
+    categories: 'idle',
+    restaurant: 'idle',
   },
   error: null,
 };
@@ -70,7 +77,7 @@ const initialState = {
 // ── Slice ─────────────────────────────────────────────────────
 
 const customerSlice = createSlice({
-  name: "customer",
+  name: 'customer',
   initialState,
   reducers: {
     setCategory: (state, action) => {
@@ -83,50 +90,50 @@ const customerSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchMenuAsync.pending, (state) => {
-        state.status.menu = "loading";
+        state.status.menu = 'loading';
       })
       .addCase(fetchMenuAsync.fulfilled, (state, { payload }) => {
-        state.status.menu = "succeeded";
+        state.status.menu = 'succeeded';
         state.menu = payload;
       })
       .addCase(fetchMenuAsync.rejected, (state, { payload }) => {
-        state.status.menu = "failed";
+        state.status.menu = 'failed';
         state.error = payload;
       })
 
       .addCase(fetchMenuByCategoryAsync.pending, (state) => {
-        state.status.menu = "loading";
+        state.status.menu = 'loading';
       })
       .addCase(fetchMenuByCategoryAsync.fulfilled, (state, { payload }) => {
-        state.status.menu = "succeeded";
+        state.status.menu = 'succeeded';
         state.menu = payload;
       })
       .addCase(fetchMenuByCategoryAsync.rejected, (state, { payload }) => {
-        state.status.menu = "failed";
+        state.status.menu = 'failed';
         state.error = payload;
       })
 
       .addCase(fetchCategoriesAsync.pending, (state) => {
-        state.status.categories = "loading";
+        state.status.categories = 'loading';
       })
       .addCase(fetchCategoriesAsync.fulfilled, (state, { payload }) => {
-        state.status.categories = "succeeded";
-        state.categories = ["All", ...payload];
+        state.status.categories = 'succeeded';
+        state.categories = ['All', ...payload];
       })
       .addCase(fetchCategoriesAsync.rejected, (state, { payload }) => {
-        state.status.categories = "failed";
+        state.status.categories = 'failed';
         state.error = payload;
       })
 
       .addCase(fetchRestaurantDetailsAsync.pending, (state) => {
-        state.status.restaurant = "loading";
+        state.status.restaurant = 'loading';
       })
       .addCase(fetchRestaurantDetailsAsync.fulfilled, (state, { payload }) => {
-        state.status.restaurant = "succeeded";
+        state.status.restaurant = 'succeeded';
         state.restaurantDetails = payload;
       })
       .addCase(fetchRestaurantDetailsAsync.rejected, (state, { payload }) => {
-        state.status.restaurant = "failed";
+        state.status.restaurant = 'failed';
         state.error = payload;
       });
   },
