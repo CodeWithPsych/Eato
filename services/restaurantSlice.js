@@ -17,11 +17,13 @@ export const fetchAllRestaurantsAsync = createAsyncThunk(
   "restaurant/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      return (await fetchAllRestaurants()).data;
+      const result = (await fetchAllRestaurants()).data;
+      console.log(result);
+      return result;
     } catch (err) {
       return rejectWithValue(serializeError(err));
     }
-  }
+  },
 );
 
 export const fetchRestaurantByIdAsync = createAsyncThunk(
@@ -32,7 +34,7 @@ export const fetchRestaurantByIdAsync = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(serializeError(err));
     }
-  }
+  },
 );
 
 // ── Initial State ─────────────────────────────────────────────
@@ -91,10 +93,10 @@ const restaurantSlice = createSlice({
 
 export const { clearSelectedRestaurant, clearError } = restaurantSlice.actions;
 
-export const selectRestaurants         = (s) => s.restaurant.restaurants;
-export const selectSelectedRestaurant  = (s) => s.restaurant.selectedRestaurant;
-export const selectListStatus          = (s) => s.restaurant.status.list;
-export const selectDetailStatus        = (s) => s.restaurant.status.detail;
-export const selectRestaurantError     = (s) => s.restaurant.error;
+export const selectRestaurants = (s) => s.restaurant.restaurants;
+export const selectSelectedRestaurant = (s) => s.restaurant.selectedRestaurant;
+export const selectListStatus = (s) => s.restaurant.status.list;
+export const selectDetailStatus = (s) => s.restaurant.status.detail;
+export const selectRestaurantError = (s) => s.restaurant.error;
 
 export default restaurantSlice.reducer;
