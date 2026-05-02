@@ -1,64 +1,83 @@
 import { images } from "@/constants";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useDispatch } from "react-redux";
+import { addCategoryAsync } from "@/services/ownerSlice";
 
 export default function SetCategories() {
+  const { restaurantId } = useLocalSearchParams();
+  const dispatch = useDispatch();
+
   const [categories, setCategories] = useState([]);
-  const [name, setName] = useState("");
+  const [name,  setName]  = useState("");
   const [emoji, setEmoji] = useState("🍽️");
+  const [saving, setSaving] = useState(false);
 
   const addCategory = () => {
     if (!name.trim()) return;
-    setCategories([...categories, { id: Date.now().toString(), name, emoji }]);
-    setName("");
-    setEmoji("🍽️");
+    setCategories((prev) => [...prev, { id: Date.now().toString(), name, emoji }]);
+    setName(""); setEmoji("🍽️");
   };
 
   const removeCategory = (id) => {
-    setCategories(categories.filter((c) => c.id !== id));
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleContinue = async () => {
+    if (!categories.length || saving) return;
+    setSaving(true);
+    // Save each category to the API
+    for (const cat of categories) {
+      await dispatch(addCategoryAsync({
+        restaurantId,
+        categoryName: `${cat.emoji} ${cat.name}`,
+      }));
+    }
+    setSaving(false);
+    router.push({ pathname: "/resturant/set_menu", params: { restaurantId } });
   };
 
   return (
     <View className="flex-1 bg-orange-50 px-6 pt-6">
-
-      {/* HEADER (Figma style) */}
-         <View className="flex-row items-center mb-12">
+      {/* Header */}
+      <View className="flex-row items-center mb-12">
         <TouchableOpacity onPress={() => router.back()}>
-          <Image source={images.arrowBack} className="w-6 h-6"  />
+          <Image source={images.arrowBack} className="w-6 h-6" />
         </TouchableOpacity>
-
         <View className="flex-row items-center ml-5 gap-2">
           <Image source={images.restaurant} className="w-6 h-6" tintColor="#ea580c" />
-          <Text className="text-lg font-quicksand-bold text-neutral-800">
-            Restaurant Setup
-          </Text>
+          <Text className="text-lg font-quicksand-bold text-neutral-800">Restaurant Setup</Text>
         </View>
       </View>
 
-      {/* PROGRESS */}
-       <View className="flex-row items-center justify-center mb-8">
-        <View className="w-8 h-8 bg-green-500 rounded-full items-center justify-center">
-          <Text className="text-white font-bold">1</Text>
-        </View>
-        <View className="w-12 h-1 bg-green-500 mx-2" />
-        <View className="w-8 h-8 bg-orange-600 rounded-full items-center justify-center">
-          <Text className="text-white font-bold">2</Text>
-        </View>
-        <View className="w-12 h-1 bg-gray-300 mx-2" />
-        <View className="w-8 h-8 bg-gray-300 rounded-full items-center justify-center">
-          <Text className="text-gray-500">3</Text>
-        </View>
-        <View className="w-12 h-1 bg-gray-300 mx-2" />
-        <View className="w-8 h-8 bg-gray-300 rounded-full items-center justify-center">
-          <Text className="text-gray-500">4</Text>
-        </View>
+      {/* Progress */}
+      <View className="flex-row items-center justify-center mb-8">
+        {[
+          { step: 1, done: true  },
+          { step: 2, done: false, active: true },
+          { step: 3, done: false },
+          { step: 4, done: false },
+        ].map(({ step, done, active }, i) => (
+          <View key={step} className="flex-row items-center">
+            <View
+              className={`w-8 h-8 rounded-full items-center justify-center ${
+                done ? "bg-green-500" : active ? "bg-orange-600" : "bg-gray-300"
+              }`}
+            >
+              <Text className={done || active ? "text-white font-bold" : "text-gray-500"}>
+                {step}
+              </Text>
+            </View>
+            {i < 3 && (
+              <View className={`w-12 h-1 mx-2 ${done ? "bg-green-500" : "bg-gray-300"}`} />
+            )}
+          </View>
+        ))}
       </View>
 
-      {/* CONTENT */}
       <View className="flex-1">
-
-        {/* Add category */}
+        {/* Add row */}
         <View className="flex-row gap-2 mb-4">
           <TextInput
             value={emoji}
@@ -80,7 +99,7 @@ export default function SetCategories() {
           </TouchableOpacity>
         </View>
 
-        {/* Category List */}
+        {/* List */}
         <FlatList
           data={categories}
           keyExtractor={(item) => item.id}
@@ -92,11 +111,7 @@ export default function SetCategories() {
                 <Text className="text-neutral-800">{item.name}</Text>
               </View>
               <TouchableOpacity onPress={() => removeCategory(item.id)}>
-                <Image
-                  source={images.trash}
-                  className="w-5 h-5"
-                  tintColor="red"
-                />
+                <Image source={images.trash} className="w-5 h-5" tintColor="red" />
               </TouchableOpacity>
             </View>
           )}
@@ -104,24 +119,21 @@ export default function SetCategories() {
 
         {/* Buttons */}
         <View className="flex-row gap-3 mt-6">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="flex-1 bg-neutral-200 py-3 rounded-xl"
-          >
+          <TouchableOpacity onPress={() => router.back()} className="flex-1 bg-neutral-200 py-3 rounded-xl">
             <Text className="text-center text-neutral-700">Back</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            disabled={categories.length === 0}
-            onPress={() => router.push("/resturant/set_menu")}
+            disabled={!categories.length || saving}
+            onPress={handleContinue}
             className={`flex-1 py-3 rounded-xl ${
-              categories.length === 0 ? "bg-neutral-300" : "bg-orange-600"
+              !categories.length || saving ? "bg-neutral-300" : "bg-orange-600"
             }`}
           >
-            <Text className="text-white text-center">Continue to Menu</Text>
+            <Text className="text-white text-center">
+              {saving ? "Saving…" : "Continue to Menu"}
+            </Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </View>
   );

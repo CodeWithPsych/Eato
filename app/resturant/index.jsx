@@ -15,40 +15,31 @@ import {
   View,
 } from "react-native";
 
-export default function Index() {
+export default function RestaurantSignup() {
   const [ownerData, setOwnerData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
+    name: "", email: "", phone: "", password: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword,    setShowPassword]    = useState(false);
+  const [alertVisible,    setAlertVisible]    = useState(false);
+  const [alertMessage,    setAlertMessage]    = useState("");
+  const [goNext,          setGoNext]          = useState(false);
 
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [goNext, setGoNext] = useState(false);
+  const update = (field) => (text) => setOwnerData((prev) => ({ ...prev, [field]: text }));
 
   const handleSendOTP = () => {
-    if (
-      !ownerData.name ||
-      !ownerData.email ||
-      !ownerData.phone ||
-      !ownerData.password ||
-      !confirmPassword
-    ) {
+    const { name, email, phone, password } = ownerData;
+    if (!name || !email || !phone || !password || !confirmPassword) {
       setAlertMessage("Please fill all fields");
       setAlertVisible(true);
       return;
     }
-
-    if (ownerData.password !== confirmPassword) {
+    if (password !== confirmPassword) {
       setAlertMessage("Passwords do not match");
       setAlertVisible(true);
       return;
     }
-
-    setAlertMessage("OTP sent!");
+    setAlertMessage("OTP sent to " + email);
     setGoNext(true);
     setAlertVisible(true);
   };
@@ -57,21 +48,22 @@ export default function Index() {
     setAlertVisible(false);
     if (goNext) {
       setGoNext(false);
-      router.push("/resturant/otp");
+      router.push({
+        pathname: "/resturant/otp",
+        params: {
+          ownerName:  ownerData.name,
+          ownerEmail: ownerData.email,
+          ownerPhone: ownerData.phone,
+        },
+      });
     }
   };
 
   return (
-<KeyboardAvoidingView
-
-behavior={Platform.OS === "ios" ? "padding" : "height"}
-  style={{ flex: 1 }}
->
-
-
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
-          className="flex-1 bg-gradient-to-br from-orange-50 to-red-50 p-6 pt-14"
+          className="flex-1 bg-orange-50 p-6 pt-14"
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ flexGrow: 1 }}
         >
@@ -81,147 +73,94 @@ behavior={Platform.OS === "ios" ? "padding" : "height"}
               <Image source={images.restaurant} className="size-9" />
             </View>
 
-            {/* Title */}
-            <Text className="text-center text-neutral-800 text-lg font-semibold mb-2">
+            <Text className="text-center text-neutral-800 text-lg font-quicksand-semibold mb-1">
               Restaurant Owner Signup
             </Text>
-            <Text className="text-center text-neutral-600 text-sm mb-6">
+            <Text className="text-center text-neutral-500 text-sm mb-6">
               Create your account to set up your restaurant
             </Text>
 
-            {/* Full Name */}
-            <View className="mb-4">
-              <Text className="text-neutral-700 mb-1">Full Name *</Text>
-              <View className="relative">
-                <Image
-                  source={images.user}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-5 z-10"
-                  tintColor="black"
-                />
-                <TextInput
-                  value={ownerData.name}
-                  onChangeText={(text) =>
-                    setOwnerData({ ...ownerData, name: text })
-                  }
-                  placeholder="John Doe"
-                  className="pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
-                />
+            {/* Fields */}
+            {[
+              { label: "Full Name *",      field: "name",     icon: images.user,     keyboardType: "default",       placeholder: "John Doe" },
+              { label: "Official Email *", field: "email",    icon: images.envelope,  keyboardType: "email-address", placeholder: "owner@restaurant.com" },
+              { label: "Phone Number *",   field: "phone",    icon: images.phone,     keyboardType: "number-pad",    placeholder: "9876543210" },
+            ].map(({ label, field, icon, keyboardType, placeholder }) => (
+              <View key={field} className="mb-4">
+                <Text className="text-neutral-700 mb-1 font-quicksand-medium">{label}</Text>
+                <View className="relative">
+                  <Image
+                    source={icon}
+                    style={{ position: "absolute", left: 16, top: "50%", marginTop: -10, zIndex: 1, width: 20, height: 20 }}
+                    tintColor="#9CA3AF"
+                  />
+                  <TextInput
+                    value={ownerData[field]}
+                    onChangeText={update(field)}
+                    placeholder={placeholder}
+                    keyboardType={keyboardType}
+                    maxLength={field === "phone" ? 11 : undefined}
+                    className="pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
+                  />
+                </View>
               </View>
-            </View>
-
-            {/* Email */}
-            <View className="mb-4">
-              <Text className="text-neutral-700 mb-1">Official Email *</Text>
-              <View className="relative">
-                <Image
-                  source={images.envelope}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-5 z-10"
-                  tintColor="black"
-                />
-                <TextInput
-                  value={ownerData.email}
-                  onChangeText={(text) =>
-                    setOwnerData({ ...ownerData, email: text })
-                  }
-                  placeholder="owner@restaurant.com"
-                  keyboardType="email-address"
-                  className="pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
-                />
-              </View>
-            </View>
-
-            {/* Phone */}
-            <View className="mb-4">
-              <Text className="text-neutral-700 mb-1">Phone Number *</Text>
-              <View className="relative">
-                <Image
-                  source={images.phone}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-5 z-10"
-                  tintColor="black"
-                />
-                <TextInput
-                  value={ownerData.phone}
-                  onChangeText={(text) =>
-                    setOwnerData({ ...ownerData, phone: text })
-                  }
-                  placeholder="9876543210"
-                  keyboardType="number-pad"
-                  maxLength={10}
-                  className="pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
-                />
-              </View>
-            </View>
+            ))}
 
             {/* Password */}
-            <View className="mb-4">
-              <Text className="text-neutral-700 mb-1">Password *</Text>
-              <View className="relative">
-                <Image
-                  source={images.lock}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-5 z-10"
-                  tintColor="black"
-                />
-                <TextInput
-                  value={ownerData.password}
-                  onChangeText={(text) =>
-                    setOwnerData({ ...ownerData, password: text })
-                  }
-                  placeholder="Create a strong password"
-                  secureTextEntry={!showPassword}
-                  className="pl-10 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
-                />
-                <TouchableOpacity
-                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10"
-                  onPress={() => setShowPassword(!showPassword)}
-                >
+            {["password", "confirmPassword"].map((field) => (
+              <View key={field} className="mb-4">
+                <Text className="text-neutral-700 mb-1 font-quicksand-medium">
+                  {field === "password" ? "Password *" : "Confirm Password *"}
+                </Text>
+                <View className="relative">
                   <Image
-                    source={showPassword ? images.hide : images.visible}
-                    className="size-5"
-                    tintColor="black"
+                    source={images.lock}
+                    style={{ position: "absolute", left: 16, top: "50%", marginTop: -10, zIndex: 1, width: 20, height: 20 }}
+                    tintColor="#9CA3AF"
                   />
-                </TouchableOpacity>
+                  <TextInput
+                    value={field === "password" ? ownerData.password : confirmPassword}
+                    onChangeText={field === "password" ? update("password") : setConfirmPassword}
+                    placeholder={field === "password" ? "Create a strong password" : "Re-enter password"}
+                    secureTextEntry={!showPassword}
+                    className="pl-12 pr-12 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
+                  />
+                  {field === "password" && (
+                    <TouchableOpacity
+                      className="absolute right-4 top-3.5"
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Image
+                        source={showPassword ? images.hide : images.visible}
+                        className="size-5"
+                        tintColor="#9CA3AF"
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
-            </View>
+            ))}
 
-            {/* Confirm Password */}
-            <View className="mb-4">
-              <Text className="text-neutral-700 mb-1">Confirm Password *</Text>
-              <View className="relative">
-                <Image
-                  source={images.lock}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-5 z-10"
-                  tintColor="black"
-                />
-                <TextInput
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="Re-enter your password"
-                  secureTextEntry={!showPassword}
-                  className="pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
-                />
-              </View>
-            </View>
-
-            {/* Button */}
+            {/* Submit */}
             <TouchableOpacity
               onPress={handleSendOTP}
-              className="bg-orange-600 py-3 rounded-xl mb-2 flex-row justify-center items-center gap-2"
+              className="bg-orange-600 py-3 rounded-xl mb-3 flex-row justify-center items-center gap-2"
             >
-              <Text className="text-white font-semibold">Send OTP</Text>
-              <Image source={images.ArrowRight} className="size-5" />
+              <Text className="text-white font-quicksand-semibold">Send OTP</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.back()} className="py-3">
-              <Text className="text-center text-neutral-600">Back to Home</Text>
+              <Text className="text-center text-neutral-500 font-quicksand-medium">
+                Back to Home
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Custom Alert */}
           <CustomAlert
             visible={alertVisible}
             message={alertMessage}
             onClose={handleAlertClose}
-            buttonColor="#ff4c1b"
+            buttonColor="#ea580c"
           />
         </ScrollView>
       </TouchableWithoutFeedback>

@@ -5,7 +5,6 @@
       "name": "Foodie's Hub",
       "location": "Karachi",
       "rating": 4.5,
-
       "menu": [
         {
           "id": "item_1",
@@ -62,8 +61,14 @@
           "isAvailable": true
         }
       ],
-
-      "categories": ["Meals", "Burger", "Pizza", "Snacks", "Burrito", "Fries"]
+      "categories": [
+        "Meals",
+        "Burger",
+        "Pizza",
+        "Snacks",
+        "Burrito",
+        "Fries"
+      ]
     },
     {
       "id": "res_002",
@@ -71,7 +76,11 @@
       "location": "Lahore",
       "rating": 4.3,
       "deliveryTime": "25-35 mins",
-      "categories": ["Desi", "BBQ", "Drinks"],
+      "categories": [
+        "Desi",
+        "BBQ",
+        "Drinks"
+      ],
       "menu": [
         {
           "id": "item_4",
@@ -108,7 +117,10 @@
       "location": "Islamabad",
       "rating": 4.6,
       "deliveryTime": "20-30 mins",
-      "categories": ["Desserts", "Drinks"],
+      "categories": [
+        "Desserts",
+        "Drinks"
+      ],
       "menu": [
         {
           "id": "item_7",
@@ -135,7 +147,11 @@
       "name": "Burger Lab",
       "location": "Lahore",
       "rating": 4.7,
-      "categories": ["Burger", "Fries", "Drinks"],
+      "categories": [
+        "Burger",
+        "Fries",
+        "Drinks"
+      ],
       "menu": [
         {
           "id": "item_101",
@@ -171,7 +187,11 @@
       "name": "BBQ Nights",
       "location": "Karachi",
       "rating": 4.4,
-      "categories": ["BBQ", "Desi", "Drinks"],
+      "categories": [
+        "BBQ",
+        "Desi",
+        "Drinks"
+      ],
       "menu": [
         {
           "id": "item_104",
@@ -207,7 +227,11 @@
       "name": "Pizza Point",
       "location": "Islamabad",
       "rating": 4.5,
-      "categories": ["Pizza", "Snacks", "Drinks"],
+      "categories": [
+        "Pizza",
+        "Snacks",
+        "Drinks"
+      ],
       "menu": [
         {
           "id": "item_107",
@@ -243,7 +267,11 @@
       "name": "Chai & Chaska",
       "location": "Lahore",
       "rating": 4.3,
-      "categories": ["Tea", "Snacks", "Desserts"],
+      "categories": [
+        "Tea",
+        "Snacks",
+        "Desserts"
+      ],
       "menu": [
         {
           "id": "item_110",
@@ -335,7 +363,8 @@
       "totalAmount": 1598,
       "status": "Delivered",
       "paymentMethod": "Cash on Delivery",
-      "date": "2026-04-05"
+      "date": "2026-04-05",
+      "id": "jsD6Y45ZhF8"
     },
     {
       "orderId": "ord_002",
@@ -358,7 +387,8 @@
       "totalAmount": 900,
       "status": "Pending",
       "paymentMethod": "Card",
-      "date": "2026-04-04"
+      "date": "2026-04-04",
+      "id": "hPfk_DBLn_s"
     },
     {
       "orderId": "ord_003",
@@ -376,7 +406,8 @@
       "status": "Preparing",
       "paymentMethod": "Card",
       "date": "2026-04-06",
-      "tableNumber": 3
+      "tableNumber": 3,
+      "id": "dmt9wdmSzGE"
     },
     {
       "orderId": "ord_004",
@@ -400,7 +431,8 @@
       "status": "Ready",
       "paymentMethod": "Cash",
       "date": "2026-04-06",
-      "tableNumber": 5
+      "tableNumber": 5,
+      "id": "8H-rkIk1MmA"
     },
     {
       "orderId": "ord_005",
@@ -418,7 +450,8 @@
       "status": "Pending",
       "paymentMethod": "Card",
       "date": "2026-04-07",
-      "tableNumber": 2
+      "tableNumber": 2,
+      "id": "L7rRtpNW0Bs"
     },
     {
       "orderId": "ord_006",
@@ -442,7 +475,8 @@
       "status": "Served",
       "paymentMethod": "Cash",
       "date": "2026-04-07",
-      "tableNumber": 1
+      "tableNumber": 1,
+      "id": "zgCJZHW613s"
     },
     {
       "orderId": "ord_007",
@@ -460,7 +494,50 @@
       "status": "Cancelled",
       "paymentMethod": "Card",
       "date": "2026-04-08",
-      "tableNumber": 4
+      "tableNumber": 4,
+      "id": "h5OvFNA3MAw"
+    },
+    {
+      "id": "s7RSiY5lym0",
+      "orderId": "ord_1777676218323",
+      "status": "Pending",
+      "date": "2026-05-01",
+      "time": "3:56:58 AM",
+      "eta": null,
+      "userId": "user_001",
+      "restaurantId": "res_001",
+      "tableNumber": 2,
+      "items": [
+        {
+          "itemId": "item_4",
+          "name": "Mozarella Sticks",
+          "quantity": 5,
+          "price": 300
+        }
+      ],
+      "totalAmount": 1504.5,
+      "paymentMethod": "Cash on Delivery"
+    },
+    {
+      "id": "Myb0sp-PcGM",
+      "orderId": "ord_1777745308568",
+      "status": "Pending",
+      "date": "2026-05-02",
+      "time": "11:08:28 PM",
+      "eta": null,
+      "userId": "user_001",
+      "restaurantId": "res_007",
+      "tableNumber": 49,
+      "items": [
+        {
+          "itemId": "item_110",
+          "name": "Doodh Patti Chai",
+          "quantity": 1,
+          "price": 120
+        }
+      ],
+      "totalAmount": 124.5,
+      "paymentMethod": "Cash on Delivery"
     }
   ],
   "cart": [
@@ -482,7 +559,8 @@
           "price": 400
         }
       ],
-      "total": 1350
+      "total": 1350,
+      "id": "bZGpfW5PLj8"
     },
     {
       "userId": "user_002",
@@ -502,7 +580,8 @@
           "price": 300
         }
       ],
-      "total": 2300
+      "total": 2300,
+      "id": "snF242FrEX0"
     },
     {
       "userId": "user_003",
@@ -516,7 +595,8 @@
           "price": 750
         }
       ],
-      "total": 1500
+      "total": 1500,
+      "id": "KJ1mevj49SA"
     },
     {
       "userId": "user_004",
@@ -542,7 +622,8 @@
           "price": 100
         }
       ],
-      "total": 2450
+      "total": 2450,
+      "id": "lVo8y8mwe6o"
     }
   ],
   "reviews": [
@@ -595,5 +676,6 @@
       "rating": 5,
       "comment": "Chai is amazing, very refreshing!"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

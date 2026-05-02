@@ -1,25 +1,25 @@
-import { useEffect } from "react";
-import { FlatList, Text, View } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-import CategoryCard from "./CategoryCard";
+import { useEffect } from 'react';
+import { FlatList, Text, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import CategoryCard from './CategoryCard';
 import {
   fetchCategoriesAsync,
   fetchMenuByCategoryAsync,
   selectCategories,
   setCategory,
-} from "@/services/customerSlice";
+} from '@/services/customerSlice';
 
-const CategoriesGrid = ({ restaurantId = "res_001" }) => {
+const CategoriesGrid = ({ restaurantId }) => {
   const dispatch = useDispatch();
   const categories = useSelector(selectCategories);
 
   useEffect(() => {
+    if (!restaurantId) return;
     dispatch(fetchCategoriesAsync(restaurantId));
   }, [dispatch, restaurantId]);
 
-  // Build cards from the string array the API returns
   const categoryCards = categories
-    .filter((c) => c !== "All") // "All" is a UI-only filter, not a real category card
+    .filter((c) => c !== 'All')
     .map((name, idx) => ({ id: String(idx), name }));
 
   const handlePress = (category) => {

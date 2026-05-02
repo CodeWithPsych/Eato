@@ -1,5 +1,5 @@
 import { images } from "@/constants";
-import { Tabs } from "expo-router";
+import { Tabs, useLocalSearchParams } from "expo-router";
 import { Image, Text, View } from "react-native";
 
 const TabBarIcon = ({ title, icon, focused }) => (
@@ -32,8 +32,9 @@ const TabBarIcon = ({ title, icon, focused }) => (
   </View>
 );
 
-
 export default function TabLayout() {
+  const { table, restaurantId } = useLocalSearchParams();
+
   return (
     <Tabs
       screenOptions={{
@@ -59,6 +60,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="home"
+        initialParams={{ table, restaurantId }}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabBarIcon title="Home" icon={images.home} focused={focused} />
@@ -67,6 +69,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="menu"
+        initialParams={{ table, restaurantId }}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabBarIcon title="Menu" icon={images.menu} focused={focused} />
@@ -75,6 +78,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="cart"
+        initialParams={{ table, restaurantId }}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabBarIcon title="Cart" icon={images.cart} focused={focused} />
@@ -83,6 +87,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="orders"
+        initialParams={{ table, restaurantId }}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabBarIcon title="Orders" icon={images.clockTwo} focused={focused} />

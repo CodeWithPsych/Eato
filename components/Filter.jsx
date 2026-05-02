@@ -1,54 +1,48 @@
-import cn from "clsx";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-
+import cn from 'clsx';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchMenuByCategoryAsync,
   selectSelectedCategory,
   setCategory,
-} from "@/services/customerSlice";
+} from '@/services/customerSlice';
 
-const Filter = ({ categories = [] }) => {
+const Filter = ({ categories = [], restaurantId }) => {
   const dispatch = useDispatch();
   const active = useSelector(selectSelectedCategory);
 
-  // 🔥 Convert ["Pizza","Burger"] → [{id:"Pizza", name:"Pizza"}]
-  const data = categories.map((cat) => ({
-    id: cat,
-    name: cat,
-  }));
-  console.log(data);
-
-  const handlePress = (category) => {
-    dispatch(setCategory(category));
-    dispatch(fetchMenuByCategoryAsync(category));
+  const handlePress = (categoryName) => {
+    dispatch(setCategory(categoryName));
+    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: categoryName }));
   };
+
+  if (!categories.length) return null;
 
   return (
     <View className="pb-3">
       <FlatList
-        data={data}
+        data={categories}
         horizontal
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item}
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="gap-2"
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => handlePress(item.name)}
+            onPress={() => handlePress(item)}
             className={cn(
-              "px-4 py-2 rounded-full",
-              active === item.name
-                ? "bg-orange-600"
-                : "bg-orange-50 border-2 border-orange-200",
+              'px-4 py-2 rounded-full',
+              active === item
+                ? 'bg-orange-600'
+                : 'bg-orange-50 border-2 border-orange-200'
             )}
           >
             <Text
               className={cn(
-                "text-sm",
-                active === item.name ? "text-white" : "text-neutral-700",
+                'text-sm',
+                active === item ? 'text-white' : 'text-neutral-700'
               )}
             >
-              {item.name}
+              {item}
             </Text>
           </TouchableOpacity>
         )}

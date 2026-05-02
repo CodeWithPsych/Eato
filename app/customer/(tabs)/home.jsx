@@ -11,6 +11,7 @@ import {
   fetchRestaurantDetailsAsync,
   fetchCategoriesAsync,
   fetchMenuByCategoryAsync,
+  resetCustomer,
   selectRestaurantDetails,
   selectRestaurantStatus,
 } from "@/services/customerSlice";
@@ -22,12 +23,14 @@ export default function Home() {
   const restaurantStatus = useSelector(selectRestaurantStatus);
   const { addItem } = useCartStore();
 
-  // Fetch restaurant info + initial menu whenever restaurantId changes
   useEffect(() => {
     if (!restaurantId) return;
+    // Reset stale state from a previous restaurant visit
+    dispatch(resetCustomer());
+    // Load fresh data for this restaurant
     dispatch(fetchRestaurantDetailsAsync(restaurantId));
     dispatch(fetchCategoriesAsync(restaurantId));
-    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: "All" }));
+    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: 'All' }));
   }, [dispatch, restaurantId]);
 
   const handleAddToCart = (item) => {
@@ -55,24 +58,22 @@ export default function Home() {
         </Text>
       </View>
 
-      {/* Restaurant Name — live from API */}
-      {restaurantStatus === "loading" || !restaurantDetails ? (
+      {/* Restaurant Name */}
+      {restaurantStatus === 'loading' || !restaurantDetails ? (
         <ActivityIndicator color="white" className="mt-2" />
       ) : (
         <>
-          <TouchableOpacity className="mt-1">
-            <Text className="text-white text-xl font-quicksand-bold">
-              {restaurantDetails.name}
-            </Text>
-          </TouchableOpacity>
+          <Text className="text-white text-xl font-quicksand-bold mt-1">
+            {restaurantDetails.name}
+          </Text>
 
           <View className="mt-2 flex-row gap-2 items-center">
             <Image source={images.star} className="size-5" tintColor="yellow" />
             <Text className="text-white/80">
-              {restaurantDetails.rating ?? "N/A"}{" "}
+              {restaurantDetails.rating ?? 'N/A'}{' '}
               {restaurantDetails.reviewCount
                 ? `(${restaurantDetails.reviewCount}+ reviews)`
-                : ""}
+                : ''}
             </Text>
           </View>
 
@@ -97,16 +98,12 @@ export default function Home() {
   return (
     <SafeAreaView className="flex-1 bg-orange-100">
       <FlatList
-        data={[{ id: "content" }]}
+        data={[{ id: 'content' }]}
         keyExtractor={(item) => item.id}
         renderItem={() => (
           <View>
-            {/* Pass restaurantId down so Categories/FeaturedItems use the right data */}
             <Categories restaurantId={restaurantId} />
-            <FeaturedItems
-              restaurantId={restaurantId}
-              onAddToCart={handleAddToCart}
-            />
+            <FeaturedItems restaurantId={restaurantId} onAddToCart={handleAddToCart} />
           </View>
         )}
         ListHeaderComponent={Header}

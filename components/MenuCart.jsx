@@ -1,67 +1,117 @@
-import { getImage } from "@/constants/getImage";
-import { useCartStore } from "@/store/cart.store";
-import { useState } from "react";
+import CartButton from '@/components/CartButton';
+import Filter from '@/components/Filter';
+import MenuCart from '@/components/MenuCart';
+import SearchBar from '@/components/SearchBar';
+import cn from 'clsx';
+import { useEffect, useMemo, useState } from 'react';
+import { FlatList, Text, View, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocalSearchParams } from 'expo-router';
 import {
-  ActivityIndicator,
-  Image,
-  Platform,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+  fetchCategoriesAsync,
+  fetchMenuByCategoryAsync,
+  selectCategories,
+  selectMenu,
+  selectSelectedCategory,
+  selectMenuStatus,
+  setCategory,
+} from '@/services/customerSlice';
 
-const MenuCart = ({ item }) => {
-  const { id, image, name, price } = item;
-  const { addItem } = useCartStore();
-  const [loading, setLoading] = useState(true);
+const Menu = () => {
+  const dispatch = useDispatch();
+  const { restaurantId } = useLocalSearchParams();
+
+  const categories = useSelector(selectCategories);
+  const menu = useSelector(selectMenu);
+  const selectedCategory = useSelector(selectSelectedCategory);
+  const menuStatus = useSelector(selectMenuStatus);
+
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (!restaurantId) return;
+    dispatch(fetchCategoriesAsync(restaurantId));
+    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: 'All' }));
+  }, [dispatch, restaurantId]);
+
+  const handleCategoryChange = (category) => {
+    dispatch(setCategory(category));
+    dispatch(fetchMenuByCategoryAsync({ restaurantId, category }));
+  };
+
+  const filteredMenu = useMemo(() => {
+    if (!searchQuery.trim()) return menu;
+    const q = searchQuery.toLowerCase();
+    return menu.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(q) ||
+        item.category?.toLowerCase().includes(q)
+    );
+  }, [menu, searchQuery]);
 
   return (
-    <TouchableOpacity
-      className="bg-orange-50 rounded-2xl border-orange-200  p-4 items-center shadow-md w-40 h-44"
-      style={
-        Platform.OS === "android" ? { elevation: 5, shadowColor: "#000" } : {}
-      }
-      onPress={() => console.log("Card pressed:", name)}
-    >
-      {loading && (
-        <ActivityIndicator
-          size="small"
-          color="#FE8C00"
-          className="absolute top-10"
-        />
-      )}
+    <SafeAreaView className="bg-orange-100 h-full">
+      <FlatList
+        data={filteredMenu}
+        renderItem={({ item, index }) => {
+          const isLeftColumn = index % 2 === 0;
+          return (
+            <View
+              className={cn(
+                'flex-1 max-w-[48%]',
+                !isLeftColumn ? 'mt-10' : 'mt-0'
+              )}
+            >
+              <MenuCart item={item} />
+            </View>
+          );
+        }}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        columnWrapperClassName="gap-7"
+        contentContainerClassName="gap-7 px-5 pb-32"
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={() =>
+          menuStatus === 'loading' ? (
+            <View className="items-center py-16">
+              <ActivityIndicator color="#ff4c1b" />
+            </View>
+          ) : (
+            <View className="items-center py-16">
+              <Text className="text-neutral-400 font-quicksand-medium">
+                {searchQuery ? 'No items match your search' : 'No menu items available'}
+              </Text>
+            </View>
+          )
+        }
+        ListHeaderComponent={() => (
+          <View className="my-5 gap-5">
+            <View className="flex-between flex-row w-full">
+              <View>
+                <Text className="font-quicksand-bold text-xl uppercase text-primary">
+                  Menu
+                </Text>
+                <Text className="font-quicksand-semibold text-dark-100 mt-2">
+                  Find your favourite food
+                </Text>
+              </View>
+              <CartButton />
+            </View>
 
-      <Image
-        source={getImage(image)}
-        className="size-36 absolute -top-16"
-        resizeMode="contain"
-        onLoadEnd={() => setLoading(false)}
+            <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+
+            <Filter
+              categories={categories}
+              restaurantId={restaurantId}
+              selectedCategory={selectedCategory}
+              onSelectCategory={handleCategoryChange}
+            />
+          </View>
+        )}
       />
-
-      <View className="absolute bottom-3 items-center">
-        <Text className="text-center font-quicksand-bold text-base mb-1">
-          {name}
-        </Text>
-
-        <Text className="text-gray-500">Rs {price}</Text>
-        <TouchableOpacity
-          onPress={() =>
-            addItem({
-              id,
-              name,
-              price,
-              image,
-              customizations: [], // keep your customizations empty
-            })
-          }
-        >
-          <Text className="text-orange-500 font-quicksand-bold text-sm mt-1">
-            + Add to cart
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
+    </SafeAreaView>
   );
 };
 
-export default MenuCart;
+export default Menu;

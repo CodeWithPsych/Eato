@@ -1,23 +1,25 @@
-import CartItem from "@/components/CartItem";
-import CustomAlert from "@/components/CustomAlert";
-import CustomButton from "@/components/CustomButton";
-import CustomHeader from "@/components/CustomHeader";
-import { images } from "@/constants";
-import { useCartStore } from "@/store/cart.store";
-import { createOrderAsync, selectCreateStatus } from "@/services/orderSlice";
-import cn from "clsx";
-import { useState } from "react";
-import { FlatList, Image, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocalSearchParams } from "expo-router";
+import CartItem from '@/components/CartItem';
+import CustomAlert from '@/components/CustomAlert';
+import CustomButton from '@/components/CustomButton';
+import CustomHeader from '@/components/CustomHeader';
+import { images } from '@/constants';
+import { useCartStore } from '@/store/cart.store';
+import { createOrderAsync, selectCreateStatus } from '@/services/orderSlice';
+import cn from 'clsx';
+import { useState } from 'react';
+import { FlatList, Image, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocalSearchParams } from 'expo-router';
 
-const DEMO_USER_ID = "user_001";
+const DEMO_USER_ID = 'user_001';
+const GST = 5;
+const DISCOUNT = 0.5;
 
-const PaymentInfoStripe = ({ label, value, labelStyle, valueStyle }) => (
+const PaymentRow = ({ label, value, labelStyle, valueStyle }) => (
   <View className="flex-between flex-row my-1">
-    <Text className={cn("paragraph-medium text-gray-200", labelStyle)}>{label}</Text>
-    <Text className={cn("paragraph-bold text-dark-100", valueStyle)}>{value}</Text>
+    <Text className={cn('paragraph-medium text-gray-200', labelStyle)}>{label}</Text>
+    <Text className={cn('paragraph-bold text-dark-100', valueStyle)}>{value}</Text>
   </View>
 );
 
@@ -25,38 +27,39 @@ const Cart = () => {
   const dispatch = useDispatch();
   const { items, getTotalItems, getTotalPrice, clearCart } = useCartStore();
   const createStatus = useSelector(selectCreateStatus);
-  const { table } = useLocalSearchParams();
+  const { table, restaurantId } = useLocalSearchParams();
 
   const [alertVisible, setAlertVisible] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
+  const [alertMessage, setAlertMessage] = useState('');
 
   const totalItems = getTotalItems();
-  const totalPrice = getTotalPrice();
+  const subtotal = getTotalPrice();
+  const grandTotal = parseFloat((subtotal + GST - DISCOUNT).toFixed(2));
 
   const handleOrderNow = async () => {
-    if (items.length === 0) return;
+    if (!items.length) return;
 
     const result = await dispatch(
       createOrderAsync({
         userId: DEMO_USER_ID,
-        restaurantId: "res_001",
-        tableNumber: table ? parseInt(table) : Math.floor(Math.random() * 10) + 1,
+        restaurantId: restaurantId ?? 'res_001',
+        tableNumber: table ? parseInt(table, 10) : 1,
         items: items.map((i) => ({
           itemId: i.id,
           name: i.name,
           quantity: i.quantity,
           price: i.price,
         })),
-        totalAmount: parseFloat((totalPrice + 5 - 0.5).toFixed(2)),
-        paymentMethod: "Cash on Delivery",
+        totalAmount: grandTotal,
+        paymentMethod: 'Cash on Delivery',
       })
     );
 
     if (createOrderAsync.fulfilled.match(result)) {
       clearCart();
-      setAlertMessage("🎉 Your order has been placed successfully!");
+      setAlertMessage('🎉 Your order has been placed successfully!');
     } else {
-      setAlertMessage("Something went wrong. Please try again.");
+      setAlertMessage('Something went wrong. Please try again.');
     }
     setAlertVisible(true);
   };
@@ -66,54 +69,51 @@ const Cart = () => {
       <FlatList
         data={items}
         renderItem={({ item }) => <CartItem item={item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => `${item.id}-${JSON.stringify(item.customizations)}`}
         contentContainerClassName="pb-44 px-5 pt-5"
         ListHeaderComponent={() => <CustomHeader title="Your Cart" />}
         ListEmptyComponent={() => (
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 400 }}
-          >
+          <View className="flex-1 justify-center items-center h-96">
             <Image
               source={images.emptyState}
-              style={{ width: 200, height: 200, resizeMode: "contain" }}
+              style={{ width: 200, height: 200, resizeMode: 'contain' }}
             />
-            <Text style={{ fontSize: 24, fontWeight: "700", color: "#333" }}>Cart Empty</Text>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: '#333' }}>
+              Cart Empty
+            </Text>
           </View>
         )}
         ListFooterComponent={() =>
-          totalItems > 0 && (
+          totalItems > 0 ? (
             <View className="gap-5">
               <View className="mt-6 border border-gray-200 p-5 rounded-2xl">
                 <Text className="h3-bold text-dark-100 mb-5">Payment Summary</Text>
-
-                <PaymentInfoStripe
-                  label={`Total Items (${totalItems})`}
-                  value={`Rs: ${totalPrice.toFixed(2)}`}
+                <PaymentRow
+                  label={`Items (${totalItems})`}
+                  value={`Rs ${subtotal.toFixed(2)}`}
                 />
-                <PaymentInfoStripe label="GST" value="Rs: 5.00" />
-                <PaymentInfoStripe
+                <PaymentRow label="GST" value={`Rs ${GST.toFixed(2)}`} />
+                <PaymentRow
                   label="Discount"
-                  value="- Rs 0.50"
+                  value={`- Rs ${DISCOUNT.toFixed(2)}`}
                   valueStyle="!text-success"
                 />
-
                 <View className="border-t border-gray-300 my-2" />
-
-                <PaymentInfoStripe
+                <PaymentRow
                   label="Total"
-                  value={`Rs: ${(totalPrice + 5 - 0.5).toFixed(2)}`}
+                  value={`Rs ${grandTotal.toFixed(2)}`}
                   labelStyle="base-bold !text-dark-100"
-                  valueStyle="base-bold !text-dark-100 !text-right"
+                  valueStyle="base-bold !text-dark-100"
                 />
               </View>
 
               <CustomButton
-                title={createStatus === "loading" ? "Placing Order…" : "Order Now"}
-                IsLoading={createStatus === "loading"}
+                title={createStatus === 'loading' ? 'Placing Order…' : 'Order Now'}
+                IsLoading={createStatus === 'loading'}
                 onPress={handleOrderNow}
               />
             </View>
-          )
+          ) : null
         }
       />
 

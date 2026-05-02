@@ -1,18 +1,12 @@
 const BASE = 'http://localhost:3000';
 
-// ── Helpers ───────────────────────────────────────────────────
-
-function getRestaurantId() {
-  // Default restaurant for the demo; swap for dynamic id when needed
-  return 'res_001';
-}
-
 // ── Menu ──────────────────────────────────────────────────────
 
-export function fetchMenu(restaurantId = getRestaurantId()) {
+export function fetchMenu(restaurantId) {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      if (!response.ok) throw new Error(`Restaurant ${restaurantId} not found`);
       const data = await response.json();
       resolve({ data: data.menu ?? [] });
     } catch (error) {
@@ -21,10 +15,11 @@ export function fetchMenu(restaurantId = getRestaurantId()) {
   });
 }
 
-export function fetchMenuByCategory(restaurantId = getRestaurantId(), category = 'All') {
+export function fetchMenuByCategory(restaurantId, category = 'All') {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      if (!response.ok) throw new Error(`Restaurant ${restaurantId} not found`);
       const data = await response.json();
       const menu = data.menu ?? [];
       const filtered = category === 'All' ? menu : menu.filter((i) => i.category === category);
@@ -37,10 +32,11 @@ export function fetchMenuByCategory(restaurantId = getRestaurantId(), category =
 
 // ── Categories ────────────────────────────────────────────────
 
-export function fetchCategories(restaurantId = getRestaurantId()) {
+export function fetchCategories(restaurantId) {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      if (!response.ok) throw new Error(`Restaurant ${restaurantId} not found`);
       const data = await response.json();
       resolve({ data: data.categories ?? [] });
     } catch (error) {
@@ -49,14 +45,14 @@ export function fetchCategories(restaurantId = getRestaurantId()) {
   });
 }
 
-// ── Restaurant details (customer view — no menu) ──────────────
+// ── Restaurant details ────────────────────────────────────────
 
-export function fetchRestaurantDetails(restaurantId = getRestaurantId()) {
+export function fetchRestaurantDetails(restaurantId) {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch(`${BASE}/restaurants/${restaurantId}`);
+      if (!response.ok) throw new Error(`Restaurant ${restaurantId} not found`);
       const data = await response.json();
-      if (!data || !data.id) return reject({ error: 'Restaurant not found' });
       const { menu: _omit, ...details } = data;
       resolve({ data: details });
     } catch (error) {

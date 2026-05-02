@@ -14,45 +14,51 @@ import {
   selectRestaurantOrders,
   selectRestOrdersStatus,
 } from "@/services/orderSlice";
+import { selectOwnerRestaurantId } from "@/services/ownerSlice";
+
+const DEMO_RESTAURANT_ID = "res_001";
+
+const normalize = (s = "") => s.toLowerCase();
 
 export default function Orders() {
-  const dispatch = useDispatch();
-  const allOrders = useSelector(selectRestaurantOrders);
+  const dispatch     = useDispatch();
+  const restaurantId = useSelector(selectOwnerRestaurantId) ?? DEMO_RESTAURANT_ID;
+  const allOrders    = useSelector(selectRestaurantOrders);
   const ordersStatus = useSelector(selectRestOrdersStatus);
 
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [expandedOrder, setExpandedOrder] = useState(null);
+  const [filterStatus,   setFilterStatus]   = useState("all");
+  const [searchQuery,    setSearchQuery]     = useState("");
+  const [expandedOrder,  setExpandedOrder]   = useState(null);
 
   useEffect(() => {
-    dispatch(fetchOrdersByRestaurantAsync("res_001"));
-  }, [dispatch]);
+    dispatch(fetchOrdersByRestaurantAsync(restaurantId));
+  }, [dispatch, restaurantId]);
 
-  const pendingCount = allOrders.filter(
-    (o) => o.status === "Pending" || o.status === "pending"
+  const pendingCount = allOrders.filter((o) =>
+    normalize(o.status) === "pending"
   ).length;
 
-  const servedCount = allOrders.filter(
-    (o) => o.status === "Delivered" || o.status === "served" || o.status === "ready"
+  const servedCount = allOrders.filter((o) =>
+    ["delivered", "served", "ready"].includes(normalize(o.status))
   ).length;
 
-  const totalRevenue = allOrders.reduce((sum, o) => sum + (o.totalAmount ?? o.total ?? 0), 0);
-
-  const normaliseStatus = (s = "") => s.toLowerCase();
+  const totalRevenue = allOrders.reduce(
+    (sum, o) => sum + (o.totalAmount ?? o.total ?? 0), 0
+  );
 
   const filteredOrders = allOrders.filter((order) => {
-    const status = normaliseStatus(order.status);
-
+    const status = normalize(order.status);
     const matchesStatus =
       filterStatus === "all" ||
-      (filterStatus === "pending" && (status === "pending")) ||
-      (filterStatus === "served" &&
-        (status === "delivered" || status === "served" || status === "ready"));
+      (filterStatus === "pending" && status === "pending") ||
+      (filterStatus === "served" && ["delivered", "served", "ready"].includes(status));
 
-    const id = order.orderId ?? order.id ?? "";
+    const id = (order.orderId ?? order.id ?? "").toLowerCase();
+    const table = `table ${order.tableNumber ?? ""}`.toLowerCase();
     const matchesSearch =
-      id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      `table ${order.tableNumber ?? ""}`.toLowerCase().includes(searchQuery.toLowerCase());
+      !searchQuery ||
+      id.includes(searchQuery.toLowerCase()) ||
+      table.includes(searchQuery.toLowerCase());
 
     return matchesStatus && matchesSearch;
   });
@@ -74,7 +80,7 @@ export default function Orders() {
       className="flex-1 bg-neutral-50 px-4 pt-6"
       contentContainerStyle={{ paddingBottom: 120 }}
     >
-      {/* Summary Cards */}
+      {/* Summary */}
       <View className="flex-row justify-between mb-5">
         <View className="bg-orange-100 rounded-xl p-4 w-[32%] items-center">
           <Text className="text-orange-600 text-xl font-bold">{pendingCount}</Text>
@@ -100,26 +106,20 @@ export default function Orders() {
 
       {/* Filters */}
       <View className="flex-row mb-5">
-        {["all", "pending", "served"].map((status) => (
+        {["all", "pending", "served"].map((f) => (
           <TouchableOpacity
-            key={status}
-            onPress={() => setFilterStatus(status)}
+            key={f}
+            onPress={() => setFilterStatus(f)}
             className={`px-4 py-2 rounded-full mr-2 ${
-              filterStatus === status
-                ? status === "pending"
-                  ? "bg-orange-600"
-                  : status === "served"
-                  ? "bg-green-600"
-                  : "bg-purple-600"
+              filterStatus === f
+                ? f === "pending" ? "bg-orange-600"
+                : f === "served"  ? "bg-green-600"
+                : "bg-purple-600"
                 : "bg-neutral-200"
             }`}
           >
-            <Text
-              className={`text-sm ${
-                filterStatus === status ? "text-white" : "text-neutral-700"
-              }`}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+            <Text className={`text-sm capitalize ${filterStatus === f ? "text-white" : "text-neutral-700"}`}>
+              {f}
             </Text>
           </TouchableOpacity>
         ))}
@@ -132,31 +132,25 @@ export default function Orders() {
         </View>
       ) : (
         filteredOrders.map((order) => {
-          const orderId = order.orderId ?? order.id;
-          const status = normaliseStatus(order.status);
-          const isServed =
-            status === "delivered" || status === "served" || status === "ready";
+          const oid      = order.orderId ?? order.id;
+          const isServed = ["delivered", "served", "ready"].includes(normalize(order.status));
 
           return (
             <View
-              key={orderId}
+              key={oid}
               className={`rounded-2xl mb-4 border-2 ${
-                isServed
-                  ? "border-green-200 bg-green-50"
-                  : "border-orange-200 bg-orange-50"
+                isServed ? "border-green-200 bg-green-50" : "border-orange-200 bg-orange-50"
               }`}
             >
-              {/* Header row — tap to expand */}
+              {/* Header */}
               <TouchableOpacity
-                onPress={() =>
-                  setExpandedOrder(expandedOrder === orderId ? null : orderId)
-                }
+                onPress={() => setExpandedOrder(expandedOrder === oid ? null : oid)}
                 className="p-4"
               >
                 <View className="flex-row justify-between items-center">
                   <View>
                     <View className="flex-row items-center gap-2">
-                      <Text className="font-semibold">{orderId}</Text>
+                      <Text className="font-semibold text-neutral-800">{oid}</Text>
                       <Text
                         className={`px-2 py-1 rounded-full text-xs ${
                           isServed
@@ -167,34 +161,34 @@ export default function Orders() {
                         {order.status}
                       </Text>
                     </View>
-                    <Text className="text-sm text-neutral-600 mt-1">
-                      Table {order.tableNumber ?? "—"} •{" "}
-                      {order.time ?? order.date ?? ""}
+                    <Text className="text-sm text-neutral-500 mt-1">
+                      Table {order.tableNumber ?? "—"} • {order.time ?? order.date ?? ""}
                     </Text>
                   </View>
-                  <Text className="text-neutral-600">
-                    {expandedOrder === orderId ? "▲" : "▼"}
+                  <Text className="text-neutral-500">
+                    {expandedOrder === oid ? "▲" : "▼"}
                   </Text>
                 </View>
               </TouchableOpacity>
 
-              {/* Expanded detail */}
-              {expandedOrder === orderId ? (
+              {/* Expanded */}
+              {expandedOrder === oid ? (
                 <View className="px-4 pb-4 border-t border-neutral-200">
-                  {(order.items ?? []).map((item, idx) => (
-                    <Text key={idx} className="text-sm text-neutral-700 mb-1">
-                      {item.quantity}x {item.name} — Rs {item.price * item.quantity}
-                    </Text>
-                  ))}
-                  <Text className="text-purple-600 font-semibold mt-2">
+                  <View className="gap-1 mt-3 mb-2">
+                    {(order.items ?? []).map((item, idx) => (
+                      <Text key={idx} className="text-sm text-neutral-700">
+                        {item.quantity}× {item.name} — Rs {item.price * item.quantity}
+                      </Text>
+                    ))}
+                  </View>
+                  <Text className="text-purple-600 font-semibold">
                     Total: Rs {order.totalAmount ?? order.total ?? 0}
                   </Text>
 
-                  {/* Quick status actions */}
                   {!isServed && (
                     <View className="flex-row gap-2 mt-3">
                       <TouchableOpacity
-                        onPress={() => handleStatusChange(orderId, "Delivered")}
+                        onPress={() => handleStatusChange(oid, "Delivered")}
                         className="flex-1 bg-green-600 py-2 rounded-xl"
                       >
                         <Text className="text-white text-center text-sm font-quicksand-semibold">
@@ -202,7 +196,7 @@ export default function Orders() {
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => handleStatusChange(orderId, "Cancelled")}
+                        onPress={() => handleStatusChange(oid, "Cancelled")}
                         className="flex-1 bg-red-100 py-2 rounded-xl"
                       >
                         <Text className="text-red-600 text-center text-sm font-quicksand-semibold">
@@ -213,15 +207,13 @@ export default function Orders() {
                   )}
                 </View>
               ) : (
-                <View className="px-4 pb-4">
-                  <View className="flex-row justify-between">
-                    <Text className="text-sm text-neutral-600">
-                      {(order.items ?? []).length} item(s)
-                    </Text>
-                    <Text className="text-purple-600 font-semibold">
-                      Rs {order.totalAmount ?? order.total ?? 0}
-                    </Text>
-                  </View>
+                <View className="px-4 pb-4 flex-row justify-between">
+                  <Text className="text-sm text-neutral-500">
+                    {(order.items ?? []).length} item(s)
+                  </Text>
+                  <Text className="text-purple-600 font-semibold">
+                    Rs {order.totalAmount ?? order.total ?? 0}
+                  </Text>
                 </View>
               )}
             </View>
