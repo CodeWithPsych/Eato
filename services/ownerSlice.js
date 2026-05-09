@@ -1,25 +1,24 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
-  fetchDashboardStats,
-  fetchOwnerMenu,
-  addMenuItem,
-  editMenuItem,
-  deleteMenuItem,
-  fetchOwnerCategories,
   addCategory,
-  deleteCategory,
-  fetchChefs,
   addChef,
-  updateChef,
+  addMenuItem,
+  deleteCategory,
   deleteChef,
+  deleteMenuItem,
+  editMenuItem,
+  fetchChefs,
+  fetchDashboardStats,
+  fetchOwnerCategories,
+  fetchOwnerMenu,
+  updateChef,
 } from "./ownerApi";
-import { loginOwner, logoutOwner, getOwnerMe } from "./ownerAuthApi";
+import { getOwnerMe, loginOwner, logoutOwner } from "./ownerAuthApi";
 
 // ── Error normaliser ──────────────────────────────────────────
 const msg = (err) =>
   err?.response?.data?.message ?? err?.message ?? "Something went wrong";
 
-// ── Normalise a menu item from the backend ────────────────────
 const normaliseItem = (item) => ({
   ...item,
   id: item._id ?? item.id,
@@ -35,7 +34,7 @@ export const loginOwnerAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const logoutOwnerAsync = createAsyncThunk(
@@ -44,9 +43,10 @@ export const logoutOwnerAsync = createAsyncThunk(
     try {
       await logoutOwner();
     } catch (e) {
-      return rejectWithValue(msg(e));
+      // Even if the API call fails, clear local state
+      console.warn("Logout API error:", e.message);
     }
-  }
+  },
 );
 
 export const getOwnerMeAsync = createAsyncThunk(
@@ -58,7 +58,7 @@ export const getOwnerMeAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 // ── Dashboard ─────────────────────────────────────────────────
@@ -71,7 +71,7 @@ export const fetchDashboardStatsAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 // ── Menu ──────────────────────────────────────────────────────
@@ -80,14 +80,14 @@ export const fetchOwnerMenuAsync = createAsyncThunk(
   async (category, { rejectWithValue }) => {
     try {
       const res = await fetchOwnerMenu(
-        typeof category === "string" ? category : undefined
+        typeof category === "string" ? category : undefined,
       );
       const data = res.data?.data ?? [];
       return Array.isArray(data) ? data.map(normaliseItem) : [];
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const addMenuItemAsync = createAsyncThunk(
@@ -99,7 +99,7 @@ export const addMenuItemAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const editMenuItemAsync = createAsyncThunk(
@@ -111,7 +111,7 @@ export const editMenuItemAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const deleteMenuItemAsync = createAsyncThunk(
@@ -123,7 +123,7 @@ export const deleteMenuItemAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 // ── Categories ────────────────────────────────────────────────
@@ -137,7 +137,7 @@ export const fetchOwnerCategoriesAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const addCategoryAsync = createAsyncThunk(
@@ -149,7 +149,7 @@ export const addCategoryAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const deleteCategoryAsync = createAsyncThunk(
@@ -161,7 +161,7 @@ export const deleteCategoryAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 // ── Chefs ─────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ export const fetchChefsAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const addChefAsync = createAsyncThunk(
@@ -186,7 +186,7 @@ export const addChefAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const updateChefAsync = createAsyncThunk(
@@ -198,7 +198,7 @@ export const updateChefAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 export const deleteChefAsync = createAsyncThunk(
@@ -210,7 +210,7 @@ export const deleteChefAsync = createAsyncThunk(
     } catch (e) {
       return rejectWithValue(msg(e));
     }
-  }
+  },
 );
 
 // ── Initial State ─────────────────────────────────────────────
@@ -261,7 +261,6 @@ const ownerSlice = createSlice({
         s.ownerId = payload?.ownerId;
         s.ownerName = payload?.name;
         s.ownerEmail = payload?.email;
-        // restaurantId may be a populated object or a plain id
         s.restaurantId =
           payload?.restaurantId?._id ?? payload?.restaurantId ?? null;
       })
@@ -269,7 +268,10 @@ const ownerSlice = createSlice({
         s.status.auth = "failed";
         s.error = payload;
       })
+
       .addCase(logoutOwnerAsync.fulfilled, () => ({ ...initialState }))
+      .addCase(logoutOwnerAsync.rejected, () => ({ ...initialState })) // clear state even on error
+
       .addCase(getOwnerMeAsync.fulfilled, (s, { payload }) => {
         s.ownerId = payload?.ownerId;
         s.ownerName = payload?.name;
@@ -306,17 +308,18 @@ const ownerSlice = createSlice({
       })
       .addCase(addMenuItemAsync.fulfilled, (s, { payload }) => {
         if (payload) s.menu.push(payload);
+        s.status.menu = "succeeded";
       })
       .addCase(editMenuItemAsync.fulfilled, (s, { payload }) => {
         if (!payload) return;
         const idx = s.menu.findIndex(
-          (m) => m._id === payload._id || m.id === payload.id
+          (m) => m._id === payload._id || m.id === payload.id,
         );
         if (idx !== -1) s.menu[idx] = payload;
       })
       .addCase(deleteMenuItemAsync.fulfilled, (s, { payload }) => {
         s.menu = s.menu.filter(
-          (m) => m._id !== payload.deletedId && m.id !== payload.deletedId
+          (m) => m._id !== payload.deletedId && m.id !== payload.deletedId,
         );
       })
 
@@ -343,25 +346,33 @@ const ownerSlice = createSlice({
         s.status.chefs = "succeeded";
         s.chefs = payload ?? [];
       })
+      .addCase(fetchChefsAsync.rejected, (s, { payload }) => {
+        s.status.chefs = "failed";
+        s.error = payload;
+      })
       .addCase(addChefAsync.fulfilled, (s, { payload }) => {
         if (payload) s.chefs.push(payload);
       })
       .addCase(updateChefAsync.fulfilled, (s, { payload }) => {
-        const idx = s.chefs.findIndex((c) => c._id === payload?.chefId);
+        if (!payload) return;
+        const idx = s.chefs.findIndex(
+          (c) => c._id === payload.chefId || c._id === payload._id,
+        );
         if (idx !== -1) s.chefs[idx] = { ...s.chefs[idx], ...payload };
       })
       .addCase(deleteChefAsync.fulfilled, (s, { payload }) => {
-        s.chefs = s.chefs.filter((c) => c._id !== payload.deletedId);
+        s.chefs = s.chefs.filter(
+          (c) => c._id !== payload.deletedId && c.id !== payload.deletedId,
+        );
       })
 
       // catch-all rejected
       .addMatcher(
         (action) =>
-          action.type.startsWith("owner/") &&
-          action.type.endsWith("/rejected"),
+          action.type.startsWith("owner/") && action.type.endsWith("/rejected"),
         (s, { payload }) => {
           s.error = payload ?? "Something went wrong";
-        }
+        },
       );
   },
 });
@@ -371,6 +382,7 @@ export const { setOwnerRestaurantId, clearError } = ownerSlice.actions;
 export const selectOwnerRestaurantId = (s) => s.owner.restaurantId;
 export const selectOwnerIsLoggedIn = (s) => s.owner.isLoggedIn;
 export const selectOwnerName = (s) => s.owner.ownerName;
+export const selectOwnerEmail = (s) => s.owner.ownerEmail;
 export const selectOwnerMenu = (s) => s.owner.menu;
 export const selectOwnerCategories = (s) => s.owner.categories;
 export const selectOwnerChefs = (s) => s.owner.chefs;

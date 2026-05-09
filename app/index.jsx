@@ -18,9 +18,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
-// Each restaurant owns this many sequential table numbers
-const TABLES_PER_RESTAURANT = 8;
-
 const BUTTON_COLORS = [
   "bg-primary",
   "bg-red-600",
@@ -41,31 +38,22 @@ export default function Index() {
     dispatch(fetchAllRestaurantsAsync());
   }, [dispatch]);
 
-  const getRestaurantForTable = (tableNumber) => {
-    if (!restaurants.length) return null;
-    const idx = Math.min(
-      Math.floor((tableNumber - 1) / TABLES_PER_RESTAURANT),
-      restaurants.length - 1,
-    );
-    return restaurants[idx];
-  };
+  // One button per restaurant — always table 1 for demo
+  const demoButtons = restaurants.map((r) => ({
+    label: `Scan Table 1 — ${r.name}`,
+    restaurantId: r._id ?? r.id,
+    tableNumber: 1,
+  }));
 
-  const handleScanTable = (tableNumber) => {
-    const restaurant = getRestaurantForTable(tableNumber);
-    if (!restaurant) return;
+  const handleScanTable = ({ restaurantId, tableNumber }) => {
+    if (!restaurantId) return;
+    // ✅ Correct route: /customer/(tabs)/home
     router.push({
-      pathname: "/customer/home",
-      params: { table: tableNumber, restaurantId: restaurant.id },
+      pathname: "/customer/(tabs)/home",
+      params: { table: tableNumber, restaurantId },
     });
   };
 
-const demoTables = restaurants.map((r, idx) => ({
-  label: `Scan Table ${idx * TABLES_PER_RESTAURANT + 1}  ${r.name}`,
-  tableNumber: idx * TABLES_PER_RESTAURANT + 1,
-  restaurantId: r._id ?? r.id,   // ← add _id fallback
-}));
-
-  // Treat idle as loading — first render fires before fetch resolves
   const isLoading = listStatus === "idle" || listStatus === "loading";
   const isFailed = listStatus === "failed";
 
@@ -79,9 +67,7 @@ const demoTables = restaurants.map((r, idx) => ({
         {/* Header */}
         <View className="flex-row justify-between items-center mt-4">
           <View>
-            <Text className="text-primary text-xl font-quicksand-bold">
-              Eato
-            </Text>
+            <Text className="text-primary text-xl font-quicksand-bold">Eato</Text>
             <Text className="text-gray-500 text-sm font-quicksand-semibold">
               Scan to order
             </Text>
@@ -136,17 +122,15 @@ const demoTables = restaurants.map((r, idx) => ({
             Scan Table QR Code
           </Text>
           <Text className="text-gray-500 text-center mt-1">
-            Point your camera at the QR code on your table{"\n"}to start
-            ordering
+            Point your camera at the QR code on your table{"\n"}to start ordering
           </Text>
           <Text className="mt-6 text-gray-400 text-sm">
             Demo Mode — tap to simulate scan
           </Text>
         </View>
 
-        {/* Buttons area */}
+        {/* Buttons */}
         <View className="w-full mt-4 pb-8">
-          {/* Loading state */}
           {isLoading && (
             <View className="items-center py-6">
               <ActivityIndicator size="large" color="#ff4c1b" />
@@ -156,12 +140,10 @@ const demoTables = restaurants.map((r, idx) => ({
             </View>
           )}
 
-          {/* Error state with retry */}
           {isFailed && (
             <View className="items-center py-4 px-2">
               <Text className="text-red-500 text-sm text-center mb-3 font-quicksand-medium">
-                {listError ??
-                  "Could not reach the server. Make sure json-server is running on port 3000."}
+                {listError ?? "Could not reach the server. Please try again."}
               </Text>
               <TouchableOpacity
                 onPress={() => dispatch(fetchAllRestaurantsAsync())}
@@ -172,12 +154,11 @@ const demoTables = restaurants.map((r, idx) => ({
             </View>
           )}
 
-          {/* Success state — one button per restaurant */}
           {listStatus === "succeeded" &&
-            demoTables.map((btn, idx) => (
+            demoButtons.map((btn, idx) => (
               <TouchableOpacity
-                key={String(btn.restaurantId)} 
-                onPress={() => handleScanTable(btn.tableNumber)}
+                key={btn.restaurantId}
+                onPress={() => handleScanTable(btn)}
                 className={`${BUTTON_COLORS[idx % BUTTON_COLORS.length]} w-full py-4 rounded-2xl mt-3`}
               >
                 <Text className="text-white text-center font-quicksand-bold">
@@ -186,7 +167,6 @@ const demoTables = restaurants.map((r, idx) => ({
               </TouchableOpacity>
             ))}
 
-          {/* Owner login — shown once loading is done */}
           {!isLoading && (
             <TouchableOpacity
               onPress={() => router.push("/owner")}

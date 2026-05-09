@@ -3,7 +3,7 @@ import FeaturedItems from "@/components/FeaturedItems";
 import { images } from "@/constants";
 import { useEffect } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context"; // ✅ correct import
 import { useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useCartStore } from "@/store/cart.store";
@@ -25,17 +25,15 @@ export default function Home() {
 
   useEffect(() => {
     if (!restaurantId) return;
-    // Reset stale state from a previous restaurant visit
     dispatch(resetCustomer());
-    // Load fresh data for this restaurant
     dispatch(fetchRestaurantDetailsAsync(restaurantId));
     dispatch(fetchCategoriesAsync(restaurantId));
-    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: 'All' }));
+    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: "All" }));
   }, [dispatch, restaurantId]);
 
   const handleAddToCart = (item) => {
     addItem({
-      id: item.id,
+      id: item.id ?? item._id,
       name: item.title ?? item.name,
       price: item.price,
       image: item.image,
@@ -45,7 +43,6 @@ export default function Home() {
 
   const Header = () => (
     <View className="bg-primary px-6 pt-6 pb-4 rounded-br-full">
-      {/* Table number */}
       <View className="flex-row gap-2 items-center">
         <Image
           source={images.location}
@@ -58,8 +55,7 @@ export default function Home() {
         </Text>
       </View>
 
-      {/* Restaurant Name */}
-      {restaurantStatus === 'loading' || !restaurantDetails ? (
+      {restaurantStatus === "loading" || !restaurantDetails ? (
         <ActivityIndicator color="white" className="mt-2" />
       ) : (
         <>
@@ -67,15 +63,17 @@ export default function Home() {
             {restaurantDetails.name}
           </Text>
 
-          <View className="mt-2 flex-row gap-2 items-center">
-            <Image source={images.star} className="size-5" tintColor="yellow" />
-            <Text className="text-white/80">
-              {restaurantDetails.rating ?? 'N/A'}{' '}
-              {restaurantDetails.reviewCount
-                ? `(${restaurantDetails.reviewCount}+ reviews)`
-                : ''}
-            </Text>
-          </View>
+          {restaurantDetails.rating ? (
+            <View className="mt-2 flex-row gap-2 items-center">
+              <Image source={images.star} className="size-5" tintColor="yellow" />
+              <Text className="text-white/80">
+                {restaurantDetails.rating}
+                {restaurantDetails.reviewCount
+                  ? ` (${restaurantDetails.reviewCount}+ reviews)`
+                  : ""}
+              </Text>
+            </View>
+          ) : null}
 
           {restaurantDetails.location ? (
             <View className="mt-1 flex-row gap-2 items-center">
@@ -98,12 +96,15 @@ export default function Home() {
   return (
     <SafeAreaView className="flex-1 bg-orange-100">
       <FlatList
-        data={[{ id: 'content' }]}
+        data={[{ id: "content" }]}
         keyExtractor={(item) => item.id}
         renderItem={() => (
           <View>
             <Categories restaurantId={restaurantId} />
-            <FeaturedItems restaurantId={restaurantId} onAddToCart={handleAddToCart} />
+            <FeaturedItems
+              restaurantId={restaurantId}
+              onAddToCart={handleAddToCart}
+            />
           </View>
         )}
         ListHeaderComponent={Header}

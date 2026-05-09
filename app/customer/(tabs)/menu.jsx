@@ -1,13 +1,13 @@
-import CartButton from '@/components/CartButton';
-import Filter from '@/components/Filter';
-import MenuCart from '@/components/MenuCart';
-import SearchBar from '@/components/SearchBar';
-import cn from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Text, View, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocalSearchParams } from 'expo-router';
+import CartButton from "@/components/CartButton";
+import Filter from "@/components/Filter";
+import MenuCart from "@/components/MenuCart";
+import SearchBar from "@/components/SearchBar";
+import cn from "clsx";
+import { useEffect, useMemo, useState } from "react";
+import { FlatList, Text, View, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocalSearchParams } from "expo-router";
 import {
   fetchCategoriesAsync,
   fetchMenuByCategoryAsync,
@@ -16,7 +16,7 @@ import {
   selectSelectedCategory,
   selectMenuStatus,
   setCategory,
-} from '@/services/customerSlice';
+} from "@/services/customerSlice";
 
 const Menu = () => {
   const dispatch = useDispatch();
@@ -27,12 +27,12 @@ const Menu = () => {
   const selectedCategory = useSelector(selectSelectedCategory);
   const menuStatus = useSelector(selectMenuStatus);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (!restaurantId) return;
     dispatch(fetchCategoriesAsync(restaurantId));
-    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: 'All' }));
+    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: "All" }));
   }, [dispatch, restaurantId]);
 
   const handleCategoryChange = (category) => {
@@ -59,28 +59,30 @@ const Menu = () => {
           return (
             <View
               className={cn(
-                'flex-1 max-w-[48%]',
-                !isLeftColumn ? 'mt-10' : 'mt-0'
+                "flex-1 max-w-[48%]",
+                !isLeftColumn ? "mt-10" : "mt-0"
               )}
             >
               <MenuCart item={item} />
             </View>
           );
         }}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => (item._id ?? item.id ?? "").toString()}
         numColumns={2}
         columnWrapperClassName="gap-7"
         contentContainerClassName="gap-7 px-5 pb-32"
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() =>
-          menuStatus === 'loading' ? (
+          menuStatus === "loading" ? (
             <View className="items-center py-16">
               <ActivityIndicator color="#ff4c1b" />
             </View>
           ) : (
             <View className="items-center py-16">
               <Text className="text-neutral-400 font-quicksand-medium">
-                {searchQuery ? 'No items match your search' : 'No menu items available'}
+                {searchQuery
+                  ? "No items match your search"
+                  : "No menu items available"}
               </Text>
             </View>
           )

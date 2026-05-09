@@ -1,117 +1,61 @@
-import CartButton from '@/components/CartButton';
-import Filter from '@/components/Filter';
-import MenuCart from '@/components/MenuCart';
-import SearchBar from '@/components/SearchBar';
-import cn from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Text, View, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocalSearchParams } from 'expo-router';
-import {
-  fetchCategoriesAsync,
-  fetchMenuByCategoryAsync,
-  selectCategories,
-  selectMenu,
-  selectSelectedCategory,
-  selectMenuStatus,
-  setCategory,
-} from '@/services/customerSlice';
+import { useCartStore } from "@/store/cart.store";
+import { getImage } from "@/constants/getImage";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
-const Menu = () => {
-  const dispatch = useDispatch();
-  const { restaurantId } = useLocalSearchParams();
+const MenuCart = ({ item }) => {
+  const { addItem } = useCartStore();
 
-  const categories = useSelector(selectCategories);
-  const menu = useSelector(selectMenu);
-  const selectedCategory = useSelector(selectSelectedCategory);
-  const menuStatus = useSelector(selectMenuStatus);
-
-  const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    if (!restaurantId) return;
-    dispatch(fetchCategoriesAsync(restaurantId));
-    dispatch(fetchMenuByCategoryAsync({ restaurantId, category: 'All' }));
-  }, [dispatch, restaurantId]);
-
-  const handleCategoryChange = (category) => {
-    dispatch(setCategory(category));
-    dispatch(fetchMenuByCategoryAsync({ restaurantId, category }));
+  const handleAdd = () => {
+    addItem({
+      id: item._id ?? item.id,
+      name: item.name,
+      price: item.price,
+      image: getImage(item.image),
+      customizations: [],
+    });
   };
 
-  const filteredMenu = useMemo(() => {
-    if (!searchQuery.trim()) return menu;
-    const q = searchQuery.toLowerCase();
-    return menu.filter(
-      (item) =>
-        item.name?.toLowerCase().includes(q) ||
-        item.category?.toLowerCase().includes(q)
-    );
-  }, [menu, searchQuery]);
-
   return (
-    <SafeAreaView className="bg-orange-100 h-full">
-      <FlatList
-        data={filteredMenu}
-        renderItem={({ item, index }) => {
-          const isLeftColumn = index % 2 === 0;
-          return (
-            <View
-              className={cn(
-                'flex-1 max-w-[48%]',
-                !isLeftColumn ? 'mt-10' : 'mt-0'
-              )}
-            >
-              <MenuCart item={item} />
-            </View>
-          );
-        }}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        columnWrapperClassName="gap-7"
-        contentContainerClassName="gap-7 px-5 pb-32"
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={() =>
-          menuStatus === 'loading' ? (
-            <View className="items-center py-16">
-              <ActivityIndicator color="#ff4c1b" />
-            </View>
-          ) : (
-            <View className="items-center py-16">
-              <Text className="text-neutral-400 font-quicksand-medium">
-                {searchQuery ? 'No items match your search' : 'No menu items available'}
-              </Text>
-            </View>
-          )
-        }
-        ListHeaderComponent={() => (
-          <View className="my-5 gap-5">
-            <View className="flex-between flex-row w-full">
-              <View>
-                <Text className="font-quicksand-bold text-xl uppercase text-primary">
-                  Menu
-                </Text>
-                <Text className="font-quicksand-semibold text-dark-100 mt-2">
-                  Find your favourite food
-                </Text>
-              </View>
-              <CartButton />
-            </View>
+    <View className="bg-orange-50 rounded-3xl shadow-sm border border-orange-200 overflow-hidden">
+      {/* Image */}
+      <View className="w-full h-36 bg-orange-100 items-center justify-center">
+        <Image
+          source={getImage(item.image)}
+          className="w-full h-full"
+          resizeMode="cover"
+        />
+      </View>
 
-            <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+      {/* Info */}
+      <View className="p-3">
+        <Text
+          className="text-neutral-800 font-quicksand-semibold text-sm"
+          numberOfLines={1}
+        >
+          {item.name}
+        </Text>
 
-            <Filter
-              categories={categories}
-              restaurantId={restaurantId}
-              selectedCategory={selectedCategory}
-              onSelectCategory={handleCategoryChange}
-            />
-          </View>
-        )}
-      />
-    </SafeAreaView>
+        {item.category ? (
+          <Text className="text-neutral-400 text-xs mt-0.5" numberOfLines={1}>
+            {item.category}
+          </Text>
+        ) : null}
+
+        <View className="flex-row items-center justify-between mt-2">
+          <Text className="text-primary font-quicksand-bold text-sm">
+            Rs {item.price}
+          </Text>
+
+          <TouchableOpacity
+            onPress={handleAdd}
+            className="bg-primary w-7 h-7 rounded-full items-center justify-center"
+          >
+            <Text className="text-white font-bold text-base leading-none">+</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 };
 
-export default Menu;
+export default MenuCart;
