@@ -1,25 +1,29 @@
-import CartItem from '@/components/CartItem';
-import CustomAlert from '@/components/CustomAlert';
-import CustomButton from '@/components/CustomButton';
-import CustomHeader from '@/components/CustomHeader';
-import { images } from '@/constants';
-import { useCartStore } from '@/store/cart.store';
-import { createOrderAsync, selectCreateStatus } from '@/services/orderSlice';
-import cn from 'clsx';
-import { useState } from 'react';
-import { FlatList, Image, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocalSearchParams } from 'expo-router';
+import CartItem from "@/components/CartItem";
+import CustomAlert from "@/components/CustomAlert";
+import CustomButton from "@/components/CustomButton";
+import CustomHeader from "@/components/CustomHeader";
+import { images } from "@/constants";
+import { selectSession } from "@/services/customerSlice";
+import { createOrderAsync, selectCreateStatus } from "@/services/orderSlice";
+import { useCartStore } from "@/store/cart.store";
+import cn from "clsx";
+import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { FlatList, Image, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
 
-const DEMO_USER_ID = 'user_001';
-const GST = 5;
-const DISCOUNT = 0.5;
+const GST_RATE = 0.05; // 5% — backend recalculates this; kept for UI display
+const DISCOUNT = 0; // no client-side discount
 
 const PaymentRow = ({ label, value, labelStyle, valueStyle }) => (
   <View className="flex-between flex-row my-1">
-    <Text className={cn('paragraph-medium text-gray-200', labelStyle)}>{label}</Text>
-    <Text className={cn('paragraph-bold text-dark-100', valueStyle)}>{value}</Text>
+    <Text className={cn("paragraph-medium text-gray-200", labelStyle)}>
+      {label}
+    </Text>
+    <Text className={cn("paragraph-bold text-dark-100", valueStyle)}>
+      {value}
+    </Text>
   </View>
 );
 
@@ -27,39 +31,52 @@ const Cart = () => {
   const dispatch = useDispatch();
   const { items, getTotalItems, getTotalPrice, clearCart } = useCartStore();
   const createStatus = useSelector(selectCreateStatus);
+  const session = useSelector(selectSession); // from QR scan
   const { table, restaurantId } = useLocalSearchParams();
 
   const [alertVisible, setAlertVisible] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
 
   const totalItems = getTotalItems();
   const subtotal = getTotalPrice();
-  const grandTotal = parseFloat((subtotal + GST - DISCOUNT).toFixed(2));
+  const gst = parseFloat((subtotal * GST_RATE).toFixed(2));
+  const grandTotal = parseFloat((subtotal + gst - DISCOUNT).toFixed(2));
 
   const handleOrderNow = async () => {
     if (!items.length) return;
 
+    // Resolve table/restaurant from either QR session or URL params
+    const resolvedRestaurantId = session?.tableNumber
+      ? restaurantId // came from URL params
+      : (restaurantId ?? "res_001");
+    const resolvedTable = session?.tableNumber
+      ? session.tableNumber
+      : table
+        ? parseInt(table, 10)
+        : 1;
+
     const result = await dispatch(
       createOrderAsync({
-        userId: DEMO_USER_ID,
-        restaurantId: restaurantId ?? 'res_001',
-        tableNumber: table ? parseInt(table, 10) : 1,
+        restaurantId: resolvedRestaurantId,
+        tableNumber: resolvedTable,
+        customerId: session?.customerId ?? null,
+        sessionTag: session?.sessionTag ?? null,
         items: items.map((i) => ({
-          itemId: i.id,
-          name: i.name,
+          itemId: i.id ?? i._id,
           quantity: i.quantity,
-          price: i.price,
+          customizations: i.customizations ?? [],
         })),
-        totalAmount: grandTotal,
-        paymentMethod: 'Cash on Delivery',
-      })
+        notes: "",
+      }),
     );
 
     if (createOrderAsync.fulfilled.match(result)) {
       clearCart();
-      setAlertMessage('🎉 Your order has been placed successfully!');
+      setAlertMessage("🎉 Your order has been placed successfully!");
     } else {
-      setAlertMessage('Something went wrong. Please try again.');
+      setAlertMessage(
+        result.payload ?? "Something went wrong. Please try again.",
+      );
     }
     setAlertVisible(true);
   };
@@ -69,16 +86,18 @@ const Cart = () => {
       <FlatList
         data={items}
         renderItem={({ item }) => <CartItem item={item} />}
-        keyExtractor={(item) => `${item.id}-${JSON.stringify(item.customizations)}`}
+        keyExtractor={(item) =>
+          `${item.id ?? item._id}-${JSON.stringify(item.customizations)}`
+        }
         contentContainerClassName="pb-44 px-5 pt-5"
         ListHeaderComponent={() => <CustomHeader title="Your Cart" />}
         ListEmptyComponent={() => (
           <View className="flex-1 justify-center items-center h-96">
             <Image
               source={images.emptyState}
-              style={{ width: 200, height: 200, resizeMode: 'contain' }}
+              style={{ width: 200, height: 200, resizeMode: "contain" }}
             />
-            <Text style={{ fontSize: 24, fontWeight: '700', color: '#333' }}>
+            <Text style={{ fontSize: 24, fontWeight: "700", color: "#333" }}>
               Cart Empty
             </Text>
           </View>
@@ -87,17 +106,14 @@ const Cart = () => {
           totalItems > 0 ? (
             <View className="gap-5">
               <View className="mt-6 border border-gray-200 p-5 rounded-2xl">
-                <Text className="h3-bold text-dark-100 mb-5">Payment Summary</Text>
+                <Text className="h3-bold text-dark-100 mb-5">
+                  Payment Summary
+                </Text>
                 <PaymentRow
                   label={`Items (${totalItems})`}
                   value={`Rs ${subtotal.toFixed(2)}`}
                 />
-                <PaymentRow label="GST" value={`Rs ${GST.toFixed(2)}`} />
-                <PaymentRow
-                  label="Discount"
-                  value={`- Rs ${DISCOUNT.toFixed(2)}`}
-                  valueStyle="!text-success"
-                />
+                <PaymentRow label="GST (5%)" value={`Rs ${gst.toFixed(2)}`} />
                 <View className="border-t border-gray-300 my-2" />
                 <PaymentRow
                   label="Total"
@@ -108,8 +124,10 @@ const Cart = () => {
               </View>
 
               <CustomButton
-                title={createStatus === 'loading' ? 'Placing Order…' : 'Order Now'}
-                IsLoading={createStatus === 'loading'}
+                title={
+                  createStatus === "loading" ? "Placing Order…" : "Order Now"
+                }
+                IsLoading={createStatus === "loading"}
                 onPress={handleOrderNow}
               />
             </View>

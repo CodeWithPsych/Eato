@@ -120,8 +120,7 @@ export default function KitchenDashboard() {
             </View>
           ) : (
             orders.map((order) => (
-              <OrderCard
-                key={order.id}
+              <OrderCard key={order._id ?? order.id}
                 order={order}
                 onAccept={(id, eta) => dispatch(acceptOrderAsync({ orderId: id, eta }))}
                 onReject={(id)      => dispatch(rejectOrderAsync(id))}

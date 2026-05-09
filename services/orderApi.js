@@ -1,97 +1,29 @@
-import { liveOrders } from './chefApi';
+import { api, publicApi } from "./api";
 
-const BASE = 'http://localhost:3000';
-const uid = () => `ord_${Date.now()}`;
-
-// ── Create a new order (customer checkout) ────────────────────
-
+// ── Create order (customer checkout) ─────────────────────────
 export function createOrder(orderData) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const newOrder = {
-        id: uid(),
-        orderId: uid(),
-        status: 'Pending',
-        date: new Date().toISOString().slice(0, 10),
-        time: new Date().toLocaleTimeString(),
-        eta: null,
-        ...orderData,
-      };
-      const res = await fetch(`${BASE}/orders`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(newOrder),
-      });
-      const data = await res.json();
-      liveOrders.unshift(data);
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return publicApi.post("/customer/orders", orderData);
 }
 
-// ── Customer order history ────────────────────────────────────
-
-export function fetchOrdersByUser(userId) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await fetch(`${BASE}/orders?userId=${userId}`);
-      const data = await res.json();
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+// ── Customer order history by table ──────────────────────────
+export function fetchOrdersByUser(restaurantId, tableNumber) {
+  return publicApi.get(
+    `/customer/restaurants/${restaurantId}/table/${tableNumber}/orders`
+  );
 }
 
-// ── All orders for a restaurant (owner / chef view) ───────────
-
-export function fetchOrdersByRestaurant(restaurantId) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await fetch(`${BASE}/orders?restaurantId=${restaurantId}`);
-      const data = await res.json();
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+// ── Restaurant orders (owner view) ───────────────────────────
+export function fetchOrdersByRestaurant(params = {}) {
+  // params: { status?, page?, limit? }
+  return api.get("/owner/orders", { params });
 }
 
-// ── Single order detail ───────────────────────────────────────
-
+// ── Single order ──────────────────────────────────────────────
 export function fetchOrderById(orderId) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await fetch(`${BASE}/orders/${orderId}`);
-      if (!res.ok) return reject({ error: 'Order not found' });
-      const data = await res.json();
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return publicApi.get(`/customer/orders/${orderId}/status`);
 }
 
-// ── Generic status update (owner override / socket event) ─────
-
+// ── Update status (owner override) ───────────────────────────
 export function updateOrderStatus(orderId, status) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await fetch(`${BASE}/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      if (!res.ok) return reject({ error: 'Order not found' });
-      const data = await res.json();
-      // Keep liveOrders mirror in sync
-      const idx = liveOrders.findIndex((o) => o.id === orderId || o.orderId === orderId);
-      if (idx !== -1) liveOrders[idx] = { ...liveOrders[idx], status };
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return api.patch(`/owner/orders/${orderId}/status`, { status });
 }

@@ -59,11 +59,11 @@ export default function Index() {
     });
   };
 
-  const demoTables = restaurants.map((r, idx) => ({
-    label: `Scan Table ${idx * TABLES_PER_RESTAURANT + 1}  ${r.name}`,
-    tableNumber: idx * TABLES_PER_RESTAURANT + 1,
-    restaurantId: r.id,
-  }));
+const demoTables = restaurants.map((r, idx) => ({
+  label: `Scan Table ${idx * TABLES_PER_RESTAURANT + 1}  ${r.name}`,
+  tableNumber: idx * TABLES_PER_RESTAURANT + 1,
+  restaurantId: r._id ?? r.id,   // ← add _id fallback
+}));
 
   // Treat idle as loading — first render fires before fetch resolves
   const isLoading = listStatus === "idle" || listStatus === "loading";
@@ -176,7 +176,7 @@ export default function Index() {
           {listStatus === "succeeded" &&
             demoTables.map((btn, idx) => (
               <TouchableOpacity
-                key={btn.restaurantId}
+                key={String(btn.restaurantId)} 
                 onPress={() => handleScanTable(btn.tableNumber)}
                 className={`${BUTTON_COLORS[idx % BUTTON_COLORS.length]} w-full py-4 rounded-2xl mt-3`}
               >

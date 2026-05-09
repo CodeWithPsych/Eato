@@ -1,78 +1,27 @@
-const BASE = "http://localhost:3000";
+import { publicApi } from "./api";
 
-// ── All restaurants (list view — menu stripped for perf) ──────
-
+// ── All published restaurants ─────────────────────────────────
 export function fetchAllRestaurants() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await fetch(`${BASE}/restaurants`);
-      if (!res.ok) throw new Error("Failed to fetch restaurants");
-      const data = await res.json();
-      // Strip heavy menu arrays so the list loads fast
-      const list = data.map(({ menu: _omit, ...rest }) => rest);
-      resolve({ data: list });
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return publicApi.get("/customer/restaurants").then((res) => ({
+    // normalise to match what restaurantSlice expects: { data: [...] }
+    data: res.data?.data ?? [],
+  }));
 }
 
-// ── Single restaurant with full menu ─────────────────────────
-
+// ── Single restaurant ─────────────────────────────────────────
 export function fetchRestaurantById(restaurantId) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await fetch(`${BASE}/restaurants/${restaurantId}`);
-      if (!res.ok) throw new Error(`Restaurant ${restaurantId} not found`);
-      const data = await res.json();
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return publicApi.get(`/customer/restaurants/${restaurantId}`).then((res) => ({
+    data: res.data?.data ?? {},
+  }));
 }
 
-// ── Create a new restaurant (onboarding flow) ─────────────────
-
-export function createRestaurant(restaurantData) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const payload = {
-        id: `res_${Date.now()}`,
-        menu: [],
-        categories: [],
-        rating: 0,
-        ...restaurantData,
-      };
-      const res = await fetch(`${BASE}/restaurants`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Failed to create restaurant");
-      const data = await res.json();
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+// ── These two are no longer used directly from the frontend ──
+// (restaurant creation / update is handled via the setup flow)
+// Kept as thin wrappers so existing slice imports don't break.
+export function createRestaurant() {
+  throw new Error("Use the setup flow (restaurantSetupApi.js) to create a restaurant");
 }
 
-// ── Update restaurant fields ──────────────────────────────────
-
-export function updateRestaurant(restaurantId, updates) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await fetch(`${BASE}/restaurants/${restaurantId}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(updates),
-      });
-      if (!res.ok) throw new Error("Failed to update restaurant");
-      const data = await res.json();
-      resolve({ data });
-    } catch (error) {
-      reject(error);
-    }
-  });
+export function updateRestaurant() {
+  throw new Error("Use the setup flow (restaurantSetupApi.js) to update a restaurant");
 }
