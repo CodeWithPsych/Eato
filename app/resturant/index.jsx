@@ -3,6 +3,7 @@ import { images } from "@/constants";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -14,20 +15,23 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { registerOwner } from "@/services/ownerAuthApi";
 
 export default function RestaurantSignup() {
   const [ownerData, setOwnerData] = useState({
     name: "", email: "", phone: "", password: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword,    setShowPassword]    = useState(false);
-  const [alertVisible,    setAlertVisible]    = useState(false);
-  const [alertMessage,    setAlertMessage]    = useState("");
-  const [goNext,          setGoNext]          = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [goNext, setGoNext] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const update = (field) => (text) => setOwnerData((prev) => ({ ...prev, [field]: text }));
+  const update = (field) => (text) =>
+    setOwnerData((prev) => ({ ...prev, [field]: text }));
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     const { name, email, phone, password } = ownerData;
     if (!name || !email || !phone || !password || !confirmPassword) {
       setAlertMessage("Please fill all fields");
@@ -39,9 +43,32 @@ export default function RestaurantSignup() {
       setAlertVisible(true);
       return;
     }
-    setAlertMessage("OTP sent to " + email);
-    setGoNext(true);
-    setAlertVisible(true);
+    if (password.length < 8) {
+      setAlertMessage("Password must be at least 8 characters");
+      setAlertVisible(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await registerOwner({
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        phone: phone.trim(),
+        password,
+        confirmPassword,
+      });
+      setAlertMessage("OTP sent to " + email.trim());
+      setGoNext(true);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ?? err?.message ?? "Registration failed";
+      setAlertMessage(msg);
+      setGoNext(false);
+    } finally {
+      setLoading(false);
+      setAlertVisible(true);
+    }
   };
 
   const handleAlertClose = () => {
@@ -51,7 +78,7 @@ export default function RestaurantSignup() {
       router.push({
         pathname: "/resturant/otp",
         params: {
-          ownerName:  ownerData.name,
+          ownerName: ownerData.name,
           ownerEmail: ownerData.email,
           ownerPhone: ownerData.phone,
         },
@@ -60,7 +87,10 @@ export default function RestaurantSignup() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           className="flex-1 bg-orange-50 p-6 pt-14"
@@ -82,16 +112,44 @@ export default function RestaurantSignup() {
 
             {/* Fields */}
             {[
-              { label: "Full Name *",      field: "name",     icon: images.user,     keyboardType: "default",       placeholder: "John Doe" },
-              { label: "Official Email *", field: "email",    icon: images.envelope,  keyboardType: "email-address", placeholder: "owner@restaurant.com" },
-              { label: "Phone Number *",   field: "phone",    icon: images.phone,     keyboardType: "number-pad",    placeholder: "9876543210" },
+              {
+                label: "Full Name *",
+                field: "name",
+                icon: images.user,
+                keyboardType: "default",
+                placeholder: "John Doe",
+              },
+              {
+                label: "Official Email *",
+                field: "email",
+                icon: images.envelope,
+                keyboardType: "email-address",
+                placeholder: "owner@restaurant.com",
+              },
+              {
+                label: "Phone Number *",
+                field: "phone",
+                icon: images.phone,
+                keyboardType: "number-pad",
+                placeholder: "9876543210",
+              },
             ].map(({ label, field, icon, keyboardType, placeholder }) => (
               <View key={field} className="mb-4">
-                <Text className="text-neutral-700 mb-1 font-quicksand-medium">{label}</Text>
+                <Text className="text-neutral-700 mb-1 font-quicksand-medium">
+                  {label}
+                </Text>
                 <View className="relative">
                   <Image
                     source={icon}
-                    style={{ position: "absolute", left: 16, top: "50%", marginTop: -10, zIndex: 1, width: 20, height: 20 }}
+                    style={{
+                      position: "absolute",
+                      left: 16,
+                      top: "50%",
+                      marginTop: -10,
+                      zIndex: 1,
+                      width: 20,
+                      height: 20,
+                    }}
                     tintColor="#9CA3AF"
                   />
                   <TextInput
@@ -99,6 +157,7 @@ export default function RestaurantSignup() {
                     onChangeText={update(field)}
                     placeholder={placeholder}
                     keyboardType={keyboardType}
+                    autoCapitalize="none"
                     maxLength={field === "phone" ? 11 : undefined}
                     className="pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
                   />
@@ -106,7 +165,7 @@ export default function RestaurantSignup() {
               </View>
             ))}
 
-            {/* Password */}
+            {/* Password fields */}
             {["password", "confirmPassword"].map((field) => (
               <View key={field} className="mb-4">
                 <Text className="text-neutral-700 mb-1 font-quicksand-medium">
@@ -115,13 +174,31 @@ export default function RestaurantSignup() {
                 <View className="relative">
                   <Image
                     source={images.lock}
-                    style={{ position: "absolute", left: 16, top: "50%", marginTop: -10, zIndex: 1, width: 20, height: 20 }}
+                    style={{
+                      position: "absolute",
+                      left: 16,
+                      top: "50%",
+                      marginTop: -10,
+                      zIndex: 1,
+                      width: 20,
+                      height: 20,
+                    }}
                     tintColor="#9CA3AF"
                   />
                   <TextInput
-                    value={field === "password" ? ownerData.password : confirmPassword}
-                    onChangeText={field === "password" ? update("password") : setConfirmPassword}
-                    placeholder={field === "password" ? "Create a strong password" : "Re-enter password"}
+                    value={
+                      field === "password" ? ownerData.password : confirmPassword
+                    }
+                    onChangeText={
+                      field === "password"
+                        ? update("password")
+                        : setConfirmPassword
+                    }
+                    placeholder={
+                      field === "password"
+                        ? "Create a strong password"
+                        : "Re-enter password"
+                    }
                     secureTextEntry={!showPassword}
                     className="pl-12 pr-12 py-3 bg-neutral-50 border border-neutral-200 rounded-xl"
                   />
@@ -144,9 +221,18 @@ export default function RestaurantSignup() {
             {/* Submit */}
             <TouchableOpacity
               onPress={handleSendOTP}
-              className="bg-orange-600 py-3 rounded-xl mb-3 flex-row justify-center items-center gap-2"
+              disabled={loading}
+              className={`py-3 rounded-xl mb-3 flex-row justify-center items-center gap-2 ${
+                loading ? "bg-orange-400" : "bg-orange-600"
+              }`}
             >
-              <Text className="text-white font-quicksand-semibold">Send OTP</Text>
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-quicksand-semibold">
+                  Send OTP
+                </Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.back()} className="py-3">

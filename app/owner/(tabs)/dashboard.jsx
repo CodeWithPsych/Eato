@@ -1,6 +1,13 @@
 import { images } from "@/constants";
 import { useEffect } from "react";
-import { Image, ScrollView, Text, View, ActivityIndicator } from "react-native";
+import {
+  Image,
+  ScrollView,
+  Text,
+  View,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchDashboardStatsAsync,
@@ -8,50 +15,73 @@ import {
   selectDashboardStats,
   selectOwnerStatsStatus,
   selectOwnerMenu,
-  selectOwnerRestaurantId,
 } from "@/services/ownerSlice";
 import {
   fetchOrdersByRestaurantAsync,
   selectRestaurantOrders,
 } from "@/services/orderSlice";
 
-// Fallback for demo mode
-const DEMO_RESTAURANT_ID = "res_001";
-
 export default function OwnerDashboard() {
-  const dispatch   = useDispatch();
-  const restaurantId = useSelector(selectOwnerRestaurantId) ?? DEMO_RESTAURANT_ID;
-  const stats        = useSelector(selectDashboardStats);
-  const statsStatus  = useSelector(selectOwnerStatsStatus);
-  const menu         = useSelector(selectOwnerMenu);
+  const dispatch = useDispatch();
+  const stats = useSelector(selectDashboardStats);
+  const statsStatus = useSelector(selectOwnerStatsStatus);
+  const menu = useSelector(selectOwnerMenu);
   const recentOrders = useSelector(selectRestaurantOrders);
 
+  const load = () => {
+    dispatch(fetchDashboardStatsAsync());
+    dispatch(fetchOwnerMenuAsync());
+    dispatch(fetchOrdersByRestaurantAsync({ limit: 10 }));
+  };
+
   useEffect(() => {
-    dispatch(fetchDashboardStatsAsync(restaurantId));
-    dispatch(fetchOwnerMenuAsync(restaurantId));
-    dispatch(fetchOrdersByRestaurantAsync(restaurantId));
-  }, [dispatch, restaurantId]);
+    load();
+  }, [dispatch]);
 
-  const isLoading = statsStatus === "loading";
+  const isLoading = statsStatus === "loading" || statsStatus === "idle";
 
-  const totalSales      = stats?.totalRevenue  ?? 0;
-  const totalOrders     = stats?.totalOrders   ?? 0;
-  const pendingOrders   = stats?.pendingOrders ?? 0;
-  const servedOrders    = stats?.servedOrders  ?? 0;
-  const topSellingItems = stats?.topItems      ?? [];
+  const totalSales = stats?.totalRevenue ?? 0;
+  const totalOrders = stats?.totalOrders ?? 0;
+  const pendingOrders = stats?.pendingOrders ?? 0;
+  const servedOrders = stats?.servedOrders ?? 0;
+  const topSellingItems = stats?.topItems ?? [];
 
   const displayedOrders = [...recentOrders]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => new Date(b.createdAt ?? b.date) - new Date(a.createdAt ?? a.date))
     .slice(0, 4);
 
   const statCards = [
     [
-      { label: "Total Sales",   value: `Rs ${totalSales.toLocaleString()}`, bg: "bg-emerald-500", sub: "Today's Revenue",  icon: images.dollar  },
-      { label: "Total Orders",  value: totalOrders,                          bg: "bg-indigo-500",  sub: "Today's Orders",   icon: images.cart    },
+      {
+        label: "Total Sales",
+        value: `Rs ${Number(totalSales).toLocaleString()}`,
+        bg: "bg-emerald-500",
+        sub: "Today's Revenue",
+        icon: images.dollar,
+      },
+      {
+        label: "Total Orders",
+        value: totalOrders,
+        bg: "bg-indigo-500",
+        sub: "Today's Orders",
+        icon: images.cart,
+      },
     ],
     [
-      { label: "Pending",       value: pendingOrders,                        bg: "bg-orange-500",  sub: "Active orders",    icon: images.clockTwo },
-      { label: "Served",        value: servedOrders,                         bg: "bg-purple-500",  sub: "Completed today",  icon: images.user2   },
+      {
+        label: "Pending",
+        value: pendingOrders,
+        bg: "bg-orange-500",
+        sub: "Active orders",
+        icon: images.clockTwo,
+      },
+      {
+        label: "Served",
+        value: servedOrders,
+        bg: "bg-purple-500",
+        sub: "Completed today",
+        icon: images.user2,
+      },
     ],
   ];
 
@@ -64,6 +94,18 @@ export default function OwnerDashboard() {
         <View className="flex-1 items-center justify-center py-20">
           <ActivityIndicator size="large" color="#7C3AED" />
         </View>
+      ) : statsStatus === "failed" ? (
+        <View className="flex-1 items-center justify-center py-20 px-6">
+          <Text className="text-red-500 text-center mb-4">
+            Failed to load dashboard data
+          </Text>
+          <TouchableOpacity
+            onPress={load}
+            className="bg-purple-600 px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-quicksand-semibold">Retry</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <>
           {/* Stats Cards */}
@@ -73,14 +115,22 @@ export default function OwnerDashboard() {
                 {row.map((card, ci) => (
                   <View key={ci} className={`w-[48%] ${card.bg} rounded-2xl p-4`}>
                     <View className="flex-row items-center gap-2 mb-2">
-                      <Image source={card.icon} tintColor="white" className="w-5 h-5" />
+                      <Image
+                        source={card.icon}
+                        tintColor="white"
+                        className="w-5 h-5"
+                      />
                       <Text className="text-sm text-white opacity-90 font-quicksand-semibold">
                         {card.label}
                       </Text>
                     </View>
-                    <Text className="text-2xl font-bold text-white">{card.value}</Text>
+                    <Text className="text-2xl font-bold text-white">
+                      {card.value}
+                    </Text>
                     {card.sub && (
-                      <Text className="text-sm text-white opacity-80 mt-1">{card.sub}</Text>
+                      <Text className="text-sm text-white opacity-80 mt-1">
+                        {card.sub}
+                      </Text>
                     )}
                   </View>
                 ))}
@@ -91,14 +141,20 @@ export default function OwnerDashboard() {
           {/* Top Selling Items */}
           <View className="bg-white rounded-2xl mx-5 p-5 border border-neutral-100 mb-6">
             <View className="flex-row items-center gap-2 mb-4">
-              <Image source={images.star} tintColor="#FACC15" className="w-5 h-5" />
+              <Image
+                source={images.star}
+                tintColor="#FACC15"
+                className="w-5 h-5"
+              />
               <Text className="text-lg font-quicksand-semibold text-neutral-800">
                 Top Selling Items
               </Text>
             </View>
 
             {topSellingItems.length === 0 ? (
-              <Text className="text-neutral-400 text-center py-4">No data yet</Text>
+              <Text className="text-neutral-400 text-center py-4">
+                No data yet for today
+              </Text>
             ) : (
               topSellingItems.slice(0, 4).map((item, index) => (
                 <View
@@ -106,13 +162,21 @@ export default function OwnerDashboard() {
                   className="flex-row items-center gap-3 p-3 bg-neutral-50 rounded-xl mb-3"
                 >
                   <View className="w-8 h-8 rounded-full bg-yellow-100 items-center justify-center">
-                    <Text className="text-yellow-600 font-semibold">#{index + 1}</Text>
+                    <Text className="text-yellow-600 font-semibold">
+                      #{index + 1}
+                    </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="font-medium text-neutral-800">{item.name}</Text>
-                    <Text className="text-sm text-neutral-500">{item.sold} sold</Text>
+                    <Text className="font-medium text-neutral-800">
+                      {item.name}
+                    </Text>
+                    <Text className="text-sm text-neutral-500">
+                      {item.sold} sold
+                    </Text>
                   </View>
-                  <Text className="text-purple-600 font-semibold">Rs {item.revenue}</Text>
+                  <Text className="text-purple-600 font-semibold">
+                    Rs {item.revenue}
+                  </Text>
                 </View>
               ))
             )}
@@ -121,19 +185,26 @@ export default function OwnerDashboard() {
           {/* Recent Orders */}
           <View className="bg-white rounded-2xl mx-5 p-5 border border-neutral-100 mb-6">
             <View className="flex-row items-center gap-2 mb-4">
-              <Image source={images.clockTwo} tintColor="black" className="w-5 h-5" />
+              <Image
+                source={images.clockTwo}
+                tintColor="black"
+                className="w-5 h-5"
+              />
               <Text className="text-lg font-quicksand-semibold text-neutral-800">
                 Recent Orders
               </Text>
             </View>
 
             {displayedOrders.length === 0 ? (
-              <Text className="text-neutral-400 text-center py-4">No recent orders</Text>
+              <Text className="text-neutral-400 text-center py-4">
+                No recent orders
+              </Text>
             ) : (
               displayedOrders.map((order) => {
-                const oid = order.orderId ?? order.id;
-                const isServed =
-                  ["Delivered", "served", "ready"].includes(order.status?.toLowerCase?.() ?? "");
+                const oid = order._id ?? order.orderId ?? order.id;
+                const isServed = ["served", "ready", "delivered"].includes(
+                  (order.status ?? "").toLowerCase()
+                );
                 return (
                   <View
                     key={oid}
@@ -141,14 +212,16 @@ export default function OwnerDashboard() {
                   >
                     <View className="flex-row justify-between items-center mb-2">
                       <View>
-                        <Text className="font-medium text-neutral-800">{oid}</Text>
+                        <Text className="font-medium text-neutral-800">
+                          Order #{oid?.toString().slice(-6)}
+                        </Text>
                         <Text className="text-sm text-neutral-500">
                           Table {order.tableNumber ?? "—"}
                         </Text>
                       </View>
                       <View className="items-end">
                         <Text className="text-purple-600 font-semibold">
-                          Rs {order.totalAmount ?? order.total ?? 0}
+                          Rs {order.total ?? order.totalAmount ?? 0}
                         </Text>
                         <Text
                           className={`text-xs px-2 py-1 rounded-full mt-1 ${
@@ -162,7 +235,9 @@ export default function OwnerDashboard() {
                       </View>
                     </View>
                     <Text className="text-xs text-neutral-500">
-                      {order.date ?? order.time}
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleString()
+                        : order.date ?? ""}
                     </Text>
                   </View>
                 );
