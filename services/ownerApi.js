@@ -2,7 +2,6 @@ import { api } from "./api";
 
 // ── Dashboard stats ───────────────────────────────────────────
 export function fetchDashboardStats() {
-  // restaurantId comes from the JWT — backend resolves it automatically
   return api.get("/owner/stats");
 }
 
@@ -13,26 +12,33 @@ export function fetchOwnerMenu(category) {
 }
 
 export function addMenuItem(item) {
-  // item may include an image File — send as multipart if so
+  // item may include an image File or an emoji
   if (item.imageFile) {
     const form = new FormData();
     form.append("name",        item.name);
     form.append("category",    item.category);
     form.append("description", item.description ?? "");
     form.append("price",       String(item.price));
+    form.append("emoji",       item.emoji ?? "");
     form.append("image",       item.imageFile);
     return api.post("/owner/menu", form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   }
-  return api.post("/owner/menu", item);
+  return api.post("/owner/menu", {
+    name:        item.name,
+    category:    item.category,
+    description: item.description ?? "",
+    price:       item.price,
+    emoji:       item.emoji ?? "",
+  });
 }
 
 export function editMenuItem(itemId, updates) {
   if (updates.imageFile) {
     const form = new FormData();
     Object.entries(updates).forEach(([k, v]) => {
-      if (k !== "imageFile") form.append(k, String(v));
+      if (k !== "imageFile") form.append(k, String(v ?? ""));
     });
     form.append("image", updates.imageFile);
     return api.patch(`/owner/menu/${itemId}`, form, {
@@ -74,7 +80,6 @@ export function fetchChefs() {
 }
 
 export function addChef(chefData) {
-  // chefData: { name, username, password }
   return api.post("/owner/chefs", chefData);
 }
 
@@ -88,7 +93,6 @@ export function deleteChef(chefId) {
 
 // ── Orders ────────────────────────────────────────────────────
 export function fetchOrdersByRestaurant(params = {}) {
-  // params: { status?, page?, limit? }
   return api.get("/owner/orders", { params });
 }
 

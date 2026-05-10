@@ -1,6 +1,6 @@
 import { useCartStore } from "@/store/cart.store";
-import { getImage } from "@/constants/getImage";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import FoodImage from "./FoodImage";
 
 const MenuCart = ({ item }) => {
   const { addItem } = useCartStore();
@@ -10,19 +10,23 @@ const MenuCart = ({ item }) => {
       id: item._id ?? item.id,
       name: item.name,
       price: item.price,
-      image: getImage(item.image),
+      // Pass through the Cloudinary URL so the cart can display it
+      image: item.image,
+      emoji: item.emoji,
       customizations: [],
     });
   };
 
   return (
     <View className="bg-orange-50 rounded-3xl shadow-sm border border-orange-200 overflow-hidden">
-      {/* Image */}
-      <View className="w-full h-36 bg-orange-100 items-center justify-center">
-        <Image
-          source={getImage(item.image)}
-          className="w-full h-full"
-          resizeMode="cover"
+      {/* Image / emoji / letter */}
+      <View className="w-full h-36">
+        <FoodImage
+          image={item.image}
+          emoji={item.emoji}
+          name={item.name}
+          className="w-full h-36"
+          imgClassName="w-full h-full"
         />
       </View>
 

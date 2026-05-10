@@ -1,6 +1,7 @@
 import { images } from "@/constants";
 import { useCartStore } from "@/store/cart.store";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import FoodImage from "./FoodImage";
 
 const CartItem = ({ item }) => {
   const { increaseQty, decreaseQty, removeItem } = useCartStore();
@@ -10,11 +11,14 @@ const CartItem = ({ item }) => {
   return (
     <View className="cart-item">
       <View className="flex flex-row items-center gap-x-3">
-        <View className="cart-item__image">
-          <Image
-            source={ item.image }
-            className="size-4/5 rounded-lg"
-            resizeMode="cover"
+        {/* Image / emoji / letter */}
+        <View className="cart-item__image overflow-hidden rounded-lg">
+          <FoodImage
+            image={item.image}
+            emoji={item.emoji}
+            name={item.name}
+            className="w-full h-full"
+            imgClassName="w-full h-full"
           />
         </View>
 
@@ -37,9 +41,7 @@ const CartItem = ({ item }) => {
               />
             </TouchableOpacity>
 
-            <Text className="base-bold text-dark-100">
-              {item.quantity}
-            </Text>
+            <Text className="base-bold text-dark-100">{item.quantity}</Text>
 
             <TouchableOpacity
               onPress={() => increaseQty(item.id, customizations)}
@@ -60,11 +62,7 @@ const CartItem = ({ item }) => {
         onPress={() => removeItem(item.id, customizations)}
         className="flex-center"
       >
-        <Image
-          source={images.trash}
-          className="size-7"
-          resizeMode="contain"
-        />
+        <Image source={images.trash} className="size-7" resizeMode="contain" />
       </TouchableOpacity>
     </View>
   );

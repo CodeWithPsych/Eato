@@ -1,4 +1,3 @@
-import { getImage } from "@/constants/getImage";
 import {
   fetchMenuByCategoryAsync,
   selectMenu,
@@ -33,10 +32,10 @@ const FeaturedItems = ({ restaurantId, onAddToCart }) => {
 
   const normalisedItems = featured.map((item) => ({
     ...item,
-    // ✅ Normalise _id → id so keyExtractor never gets undefined
     id: item._id ?? item.id ?? Math.random().toString(),
     title: item.name,
-    image: getImage(item.image),
+    // image is now a Cloudinary URL (string) — FoodImage handles it
+    // emoji is passed through if present
     description: item.description ?? item.category ?? "",
   }));
 
@@ -48,7 +47,6 @@ const FeaturedItems = ({ restaurantId, onAddToCart }) => {
 
       <FlatList
         data={normalisedItems}
-        // ✅ Safe keyExtractor — item.id is always a string now
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <FeaturedItemCard item={item} onAddToCart={onAddToCart} />

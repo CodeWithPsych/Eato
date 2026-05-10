@@ -1,14 +1,18 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import FoodImage from "./FoodImage";
 
 const FeaturedItemCard = ({ item, onAddToCart }) => {
   return (
     <View className="bg-orange-50 rounded-2xl shadow-sm border border-orange-200 overflow-hidden mb-4">
       <View className="flex-row gap-4">
+        {/* Image / emoji / letter */}
         <View className="w-28 h-28 flex-shrink-0 rounded-xl overflow-hidden">
-          <Image
-            source={item.image}
-            className="w-full h-full"
-            resizeMode="cover"
+          <FoodImage
+            image={item.image}
+            emoji={item.emoji}
+            name={item.title ?? item.name ?? ""}
+            className="w-28 h-28"
+            imgClassName="w-full h-full"
           />
         </View>
 
