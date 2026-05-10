@@ -19,19 +19,25 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocalSearchParams } from "expo-router";
 
 const STATUS_MAP = {
-  pending: { label: "Pending", icon: images.clock },
-  Pending: { label: "Pending", icon: images.clock },
-  accepted: { label: "Preparing", icon: images.clock },
+  pending:   { label: "Pending",   icon: images.clock },
+  Pending:   { label: "Pending",   icon: images.clock },
+  accepted:  { label: "Preparing", icon: images.clock },
   Preparing: { label: "Preparing", icon: images.clock },
-  ready: { label: "Ready", icon: images.check },
-  Ready: { label: "Ready", icon: images.check },
-  served: { label: "Served", icon: images.check },
-  Served: { label: "Served", icon: images.check },
+  ready:     { label: "Ready",     icon: images.check },
+  Ready:     { label: "Ready",     icon: images.check },
+  served:    { label: "Served",    icon: images.check },
+  Served:    { label: "Served",    icon: images.check },
   Delivered: { label: "Delivered", icon: images.check },
-  rejected: { label: "Rejected", icon: images.trash },
+  rejected:  { label: "Rejected",  icon: images.trash },
   cancelled: { label: "Cancelled", icon: images.trash },
   Cancelled: { label: "Cancelled", icon: images.trash },
 };
+
+// Statuses where the order is "done" — hide from the list
+const DONE_STATUSES = ["served", "Served", "delivered", "Delivered"];
+
+// Statuses where ETA should NOT be shown
+const NO_ETA_STATUSES = ["ready", "Ready", "served", "Served", "delivered", "Delivered"];
 
 const OrderCard = ({ order }) => {
   const meta = STATUS_MAP[order.status] ?? {
@@ -45,7 +51,12 @@ const OrderCard = ({ order }) => {
   );
 
   const total = Number(order?.total ?? order?.totalAmount ?? subtotal ?? 0);
-  const gst = Number(order?.gst ?? 0);
+  const gst   = Number(order?.gst ?? 0);
+
+  // Only show ETA when order is still being prepared (not ready/served)
+  const showEta =
+    order.eta &&
+    !NO_ETA_STATUSES.includes(order.status);
 
   return (
     <View className="bg-white rounded-2xl p-4 mb-4 border-2 border-gray-200">
@@ -70,10 +81,7 @@ const OrderCard = ({ order }) => {
               {item.name} × {item.quantity}
             </Text>
             <Text className="text-neutral-700">
-              Rs{" "}
-              {(
-                Number(item?.price ?? 0) * Number(item?.quantity ?? 0)
-              ).toFixed(2)}
+              Rs {(Number(item?.price ?? 0) * Number(item?.quantity ?? 0)).toFixed(2)}
             </Text>
           </View>
         ))}
@@ -97,41 +105,44 @@ const OrderCard = ({ order }) => {
         </View>
       </View>
 
-      {/* ETA */}
-      {order.eta ? (
+      {/* ETA — only while order is still being prepared */}
+      {showEta && (
         <View className="mt-2 bg-orange-50 rounded-lg px-3 py-2">
           <Text className="text-orange-600 text-sm text-center">
             ⏱ Estimated time: {order.eta} min
           </Text>
         </View>
-      ) : null}
+      )}
     </View>
   );
 };
 
 const Orders = () => {
   const dispatch = useDispatch();
-  const orders = useSelector(selectUserOrders);
-  const status = useSelector(selectUserOrdersStatus);
-  const session = useSelector(selectSession);
+  const allOrders   = useSelector(selectUserOrders);
+  const status      = useSelector(selectUserOrdersStatus);
+  const session     = useSelector(selectSession);
   const { table, restaurantId } = useLocalSearchParams();
 
-  // Resolve from QR session first, then URL params
-  const resolvedRestaurantId = session?.tableNumber
-    ? restaurantId
-    : restaurantId;
-  const resolvedTable = session?.tableNumber ?? (table ? parseInt(table, 10) : null);
+  const resolvedRestaurantId = restaurantId;
+  const resolvedTable =
+    session?.tableNumber ?? (table ? parseInt(table, 10) : null);
 
   useEffect(() => {
     if (resolvedRestaurantId && resolvedTable) {
       dispatch(
         fetchOrdersByUserAsync({
           restaurantId: resolvedRestaurantId,
-          tableNumber: resolvedTable,
+          tableNumber:  resolvedTable,
         })
       );
     }
   }, [dispatch, resolvedRestaurantId, resolvedTable]);
+
+  // Hide served/delivered orders from the customer list
+  const orders = allOrders.filter(
+    (o) => !DONE_STATUSES.includes(o.status)
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-orange-100">

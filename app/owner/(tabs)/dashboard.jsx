@@ -14,37 +14,42 @@ import {
   fetchOwnerMenuAsync,
   selectDashboardStats,
   selectOwnerStatsStatus,
-  selectOwnerMenu,
 } from "@/services/ownerSlice";
 import {
   fetchOrdersByRestaurantAsync,
   selectRestaurantOrders,
 } from "@/services/orderSlice";
+import { fetchRestaurantByIdAsync as fetchRestById } from "@/services/restaurantSlice";
 
 export default function OwnerDashboard() {
-  const dispatch = useDispatch();
-  const stats = useSelector(selectDashboardStats);
-  const statsStatus = useSelector(selectOwnerStatsStatus);
-  const menu = useSelector(selectOwnerMenu);
-  const recentOrders = useSelector(selectRestaurantOrders);
+  const dispatch      = useDispatch();
+  const stats         = useSelector(selectDashboardStats);
+  const statsStatus   = useSelector(selectOwnerStatsStatus);
+  const recentOrders  = useSelector(selectRestaurantOrders);
+  const restaurantId  = useSelector((s) => s.owner.restaurantId);
 
   const load = () => {
     dispatch(fetchDashboardStatsAsync());
     dispatch(fetchOwnerMenuAsync());
-    dispatch(fetchOrdersByRestaurantAsync({ limit: 10 }));
+    dispatch(fetchOrdersByRestaurantAsync({ limit: 50 }));
+    if (restaurantId) dispatch(fetchRestById(restaurantId));
   };
 
   useEffect(() => {
     load();
-  }, [dispatch]);
+  }, [restaurantId]);
 
   const isLoading = statsStatus === "loading" || statsStatus === "idle";
 
-  const totalSales = stats?.totalRevenue ?? 0;
-  const totalOrders = stats?.totalOrders ?? 0;
-  const pendingOrders = stats?.pendingOrders ?? 0;
-  const servedOrders = stats?.servedOrders ?? 0;
-  const topSellingItems = stats?.topItems ?? [];
+  const totalSales      = stats?.totalRevenue  ?? 0;
+  const totalOrders     = stats?.totalOrders   ?? 0;
+  const pendingOrders   = stats?.pendingOrders ?? 0;
+  const topSellingItems = stats?.topItems      ?? [];
+
+  // Only count strictly "served" (and "delivered") — NOT "ready"
+  const servedOrders = recentOrders.filter(
+    (o) => ["served", "delivered"].includes((o.status ?? "").toLowerCase())
+  ).length;
 
   const displayedOrders = [...recentOrders]
     .sort((a, b) => new Date(b.createdAt ?? b.date) - new Date(a.createdAt ?? a.date))
@@ -99,10 +104,7 @@ export default function OwnerDashboard() {
           <Text className="text-red-500 text-center mb-4">
             Failed to load dashboard data
           </Text>
-          <TouchableOpacity
-            onPress={load}
-            className="bg-purple-600 px-6 py-3 rounded-xl"
-          >
+          <TouchableOpacity onPress={load} className="bg-purple-600 px-6 py-3 rounded-xl">
             <Text className="text-white font-quicksand-semibold">Retry</Text>
           </TouchableOpacity>
         </View>
@@ -115,22 +117,14 @@ export default function OwnerDashboard() {
                 {row.map((card, ci) => (
                   <View key={ci} className={`w-[48%] ${card.bg} rounded-2xl p-4`}>
                     <View className="flex-row items-center gap-2 mb-2">
-                      <Image
-                        source={card.icon}
-                        tintColor="white"
-                        className="w-5 h-5"
-                      />
+                      <Image source={card.icon} tintColor="white" className="w-5 h-5" />
                       <Text className="text-sm text-white opacity-90 font-quicksand-semibold">
                         {card.label}
                       </Text>
                     </View>
-                    <Text className="text-2xl font-bold text-white">
-                      {card.value}
-                    </Text>
+                    <Text className="text-2xl font-bold text-white">{card.value}</Text>
                     {card.sub && (
-                      <Text className="text-sm text-white opacity-80 mt-1">
-                        {card.sub}
-                      </Text>
+                      <Text className="text-sm text-white opacity-80 mt-1">{card.sub}</Text>
                     )}
                   </View>
                 ))}
@@ -141,42 +135,24 @@ export default function OwnerDashboard() {
           {/* Top Selling Items */}
           <View className="bg-white rounded-2xl mx-5 p-5 border border-neutral-100 mb-6">
             <View className="flex-row items-center gap-2 mb-4">
-              <Image
-                source={images.star}
-                tintColor="#FACC15"
-                className="w-5 h-5"
-              />
+              <Image source={images.star} tintColor="#FACC15" className="w-5 h-5" />
               <Text className="text-lg font-quicksand-semibold text-neutral-800">
                 Top Selling Items
               </Text>
             </View>
-
             {topSellingItems.length === 0 ? (
-              <Text className="text-neutral-400 text-center py-4">
-                No data yet for today
-              </Text>
+              <Text className="text-neutral-400 text-center py-4">No data yet for today</Text>
             ) : (
               topSellingItems.slice(0, 4).map((item, index) => (
-                <View
-                  key={index}
-                  className="flex-row items-center gap-3 p-3 bg-neutral-50 rounded-xl mb-3"
-                >
+                <View key={index} className="flex-row items-center gap-3 p-3 bg-neutral-50 rounded-xl mb-3">
                   <View className="w-8 h-8 rounded-full bg-yellow-100 items-center justify-center">
-                    <Text className="text-yellow-600 font-semibold">
-                      #{index + 1}
-                    </Text>
+                    <Text className="text-yellow-600 font-semibold">#{index + 1}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="font-medium text-neutral-800">
-                      {item.name}
-                    </Text>
-                    <Text className="text-sm text-neutral-500">
-                      {item.sold} sold
-                    </Text>
+                    <Text className="font-medium text-neutral-800">{item.name}</Text>
+                    <Text className="text-sm text-neutral-500">{item.sold} sold</Text>
                   </View>
-                  <Text className="text-purple-600 font-semibold">
-                    Rs {item.revenue}
-                  </Text>
+                  <Text className="text-purple-600 font-semibold">Rs {item.revenue}</Text>
                 </View>
               ))
             )}
@@ -185,20 +161,13 @@ export default function OwnerDashboard() {
           {/* Recent Orders */}
           <View className="bg-white rounded-2xl mx-5 p-5 border border-neutral-100 mb-6">
             <View className="flex-row items-center gap-2 mb-4">
-              <Image
-                source={images.clockTwo}
-                tintColor="black"
-                className="w-5 h-5"
-              />
+              <Image source={images.clockTwo} tintColor="black" className="w-5 h-5" />
               <Text className="text-lg font-quicksand-semibold text-neutral-800">
                 Recent Orders
               </Text>
             </View>
-
             {displayedOrders.length === 0 ? (
-              <Text className="text-neutral-400 text-center py-4">
-                No recent orders
-              </Text>
+              <Text className="text-neutral-400 text-center py-4">No recent orders</Text>
             ) : (
               displayedOrders.map((order) => {
                 const oid = order._id ?? order.orderId ?? order.id;
@@ -206,10 +175,7 @@ export default function OwnerDashboard() {
                   (order.status ?? "").toLowerCase()
                 );
                 return (
-                  <View
-                    key={oid}
-                    className="bg-white p-4 rounded-xl border border-neutral-100 mb-3"
-                  >
+                  <View key={oid} className="bg-white p-4 rounded-xl border border-neutral-100 mb-3">
                     <View className="flex-row justify-between items-center mb-2">
                       <View>
                         <Text className="font-medium text-neutral-800">

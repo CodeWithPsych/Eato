@@ -18,12 +18,12 @@ import {
 const normalize = (s = "") => s.toLowerCase();
 
 export default function Orders() {
-  const dispatch = useDispatch();
-  const allOrders = useSelector(selectRestaurantOrders);
+  const dispatch    = useDispatch();
+  const allOrders   = useSelector(selectRestaurantOrders);
   const ordersStatus = useSelector(selectRestOrdersStatus);
 
   const [filterStatus, setFilterStatus] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery,  setSearchQuery]  = useState("");
   const [expandedOrder, setExpandedOrder] = useState(null);
 
   const load = () => dispatch(fetchOrdersByRestaurantAsync({ limit: 100 }));
@@ -32,29 +32,30 @@ export default function Orders() {
     load();
   }, [dispatch]);
 
-  const pendingCount = allOrders.filter(
-    (o) => normalize(o.status) === "pending"
+  // Summary counts
+  const pendingCount  = allOrders.filter((o) => normalize(o.status) === "pending").length;
+  const servedCount   = allOrders.filter((o) =>
+    ["delivered", "served"].includes(normalize(o.status))   // strictly served only
   ).length;
-
-  const servedCount = allOrders.filter((o) =>
-    ["delivered", "served", "ready"].includes(normalize(o.status))
+  const rejectedCount = allOrders.filter((o) =>
+    ["rejected", "cancelled"].includes(normalize(o.status))
   ).length;
-
-  const totalRevenue = allOrders.reduce(
-    (sum, o) => sum + (o.total ?? o.totalAmount ?? 0),
-    0
+  const totalRevenue  = allOrders.reduce(
+    (sum, o) => sum + (o.total ?? o.totalAmount ?? 0), 0
   );
 
   const filteredOrders = allOrders.filter((order) => {
     const status = normalize(order.status);
+
     const matchesStatus =
       filterStatus === "all" ||
-      (filterStatus === "pending" && status === "pending") ||
-      (filterStatus === "active" && ["accepted"].includes(status)) ||
-      (filterStatus === "served" &&
-        ["delivered", "served", "ready"].includes(status));
+      (filterStatus === "pending"  && status === "pending") ||
+      (filterStatus === "active"   && status === "accepted") ||
+      // "served" filter shows ready + served + delivered so owner can act on ready ones
+      (filterStatus === "served"   && ["delivered", "served", "ready"].includes(status)) ||
+      (filterStatus === "rejected" && ["rejected", "cancelled"].includes(status));
 
-    const id = (order._id ?? order.orderId ?? order.id ?? "").toString().toLowerCase();
+    const id    = (order._id ?? order.orderId ?? order.id ?? "").toString().toLowerCase();
     const table = `table ${order.tableNumber ?? ""}`.toLowerCase();
     const matchesSearch =
       !searchQuery ||
@@ -76,28 +77,42 @@ export default function Orders() {
     );
   }
 
+  const filters = [
+    { key: "all",      label: "All",      activeColor: "bg-purple-600" },
+    { key: "pending",  label: "Pending",  activeColor: "bg-orange-600" },
+    { key: "active",   label: "Active",   activeColor: "bg-blue-600"   },
+    { key: "served",   label: "Served",   activeColor: "bg-green-600"  },
+    { key: "rejected", label: "Rejected", activeColor: "bg-red-600"    },
+  ];
+
   return (
     <ScrollView
       className="flex-1 bg-neutral-50 px-4 pt-6"
       contentContainerStyle={{ paddingBottom: 120 }}
     >
-      {/* Summary */}
-      <View className="flex-row justify-between mb-5">
-        <View className="bg-orange-100 rounded-xl p-4 w-[32%] items-center">
-          <Text className="text-orange-600 text-xl font-bold">{pendingCount}</Text>
-          <Text className="text-orange-700 text-xs">Pending</Text>
+      {/* Summary cards */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5">
+        <View className="flex-row gap-3">
+          <View className="bg-orange-100 rounded-xl p-4 w-28 items-center">
+            <Text className="text-orange-600 text-xl font-bold">{pendingCount}</Text>
+            <Text className="text-orange-700 text-xs">Pending</Text>
+          </View>
+          <View className="bg-green-100 rounded-xl p-4 w-28 items-center">
+            <Text className="text-green-600 text-xl font-bold">{servedCount}</Text>
+            <Text className="text-green-700 text-xs">Served</Text>
+          </View>
+          <View className="bg-red-100 rounded-xl p-4 w-28 items-center">
+            <Text className="text-red-600 text-xl font-bold">{rejectedCount}</Text>
+            <Text className="text-red-700 text-xs">Rejected</Text>
+          </View>
+          <View className="bg-purple-100 rounded-xl p-4 w-28 items-center">
+            <Text className="text-purple-600 text-lg font-bold">
+              Rs {Number(totalRevenue).toLocaleString()}
+            </Text>
+            <Text className="text-purple-700 text-xs">Total</Text>
+          </View>
         </View>
-        <View className="bg-green-100 rounded-xl p-4 w-[32%] items-center">
-          <Text className="text-green-600 text-xl font-bold">{servedCount}</Text>
-          <Text className="text-green-700 text-xs">Served</Text>
-        </View>
-        <View className="bg-purple-100 rounded-xl p-4 w-[32%] items-center">
-          <Text className="text-purple-600 text-lg font-bold">
-            Rs {Number(totalRevenue).toLocaleString()}
-          </Text>
-          <Text className="text-purple-700 text-xs">Total</Text>
-        </View>
-      </View>
+      </ScrollView>
 
       {/* Search */}
       <TextInput
@@ -107,66 +122,70 @@ export default function Orders() {
         className="bg-white rounded-xl px-4 py-3 mb-4 border border-neutral-200"
       />
 
-      {/* Filters */}
-      <View className="flex-row mb-5 flex-wrap gap-2">
-        {["all", "pending", "active", "served"].map((f) => (
-          <TouchableOpacity
-            key={f}
-            onPress={() => setFilterStatus(f)}
-            className={`px-4 py-2 rounded-full ${
-              filterStatus === f
-                ? f === "pending"
-                  ? "bg-orange-600"
-                  : f === "served"
-                  ? "bg-green-600"
-                  : f === "active"
-                  ? "bg-blue-600"
-                  : "bg-purple-600"
-                : "bg-neutral-200"
-            }`}
-          >
-            <Text
-              className={`text-sm capitalize ${
-                filterStatus === f ? "text-white" : "text-neutral-700"
+      {/* Filter buttons */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5">
+        <View className="flex-row gap-2">
+          {filters.map((f) => (
+            <TouchableOpacity
+              key={f.key}
+              onPress={() => setFilterStatus(f.key)}
+              className={`px-4 py-2 rounded-full ${
+                filterStatus === f.key ? f.activeColor : "bg-neutral-200"
               }`}
             >
-              {f}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <Text
+                className={`text-sm capitalize ${
+                  filterStatus === f.key ? "text-white" : "text-neutral-700"
+                }`}
+              >
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
 
-      {/* Orders */}
+      {/* Order cards */}
       {filteredOrders.length === 0 ? (
         <View className="items-center py-16">
-          <Text className="text-neutral-400 font-quicksand-medium">
-            No orders found
-          </Text>
+          <Text className="text-neutral-400 font-quicksand-medium">No orders found</Text>
         </View>
       ) : (
         filteredOrders.map((order) => {
-          const oid = order._id ?? order.orderId ?? order.id;
+          const oid        = order._id ?? order.orderId ?? order.id;
           const statusNorm = normalize(order.status);
-          const isServed = ["delivered", "served", "ready"].includes(statusNorm);
-          const isPending = statusNorm === "pending";
+          const isPending  = statusNorm === "pending";
           const isAccepted = statusNorm === "accepted";
+          const isReady    = statusNorm === "ready";   // ← NEW
+          const isServed   = ["delivered", "served"].includes(statusNorm);
+          const isRejected = ["rejected", "cancelled"].includes(statusNorm);
+
+          // Card colour
+          const cardStyle = isRejected
+            ? "border-red-200 bg-red-50"
+            : isServed
+            ? "border-green-200 bg-green-50"
+            : isReady
+            ? "border-teal-200 bg-teal-50"          // distinct colour for ready
+            : isPending
+            ? "border-orange-200 bg-orange-50"
+            : "border-blue-200 bg-blue-50";
+
+          const badgeStyle = isRejected
+            ? "bg-red-200 text-red-700"
+            : isServed
+            ? "bg-green-200 text-green-700"
+            : isReady
+            ? "bg-teal-200 text-teal-700"
+            : isPending
+            ? "bg-orange-200 text-orange-700"
+            : "bg-blue-200 text-blue-700";
 
           return (
-            <View
-              key={oid}
-              className={`rounded-2xl mb-4 border-2 ${
-                isServed
-                  ? "border-green-200 bg-green-50"
-                  : isPending
-                  ? "border-orange-200 bg-orange-50"
-                  : "border-blue-200 bg-blue-50"
-              }`}
-            >
-              {/* Header */}
+            <View key={oid} className={`rounded-2xl mb-4 border-2 ${cardStyle}`}>
+              {/* Header row */}
               <TouchableOpacity
-                onPress={() =>
-                  setExpandedOrder(expandedOrder === oid ? null : oid)
-                }
+                onPress={() => setExpandedOrder(expandedOrder === oid ? null : oid)}
                 className="p-4"
               >
                 <View className="flex-row justify-between items-center">
@@ -175,15 +194,7 @@ export default function Orders() {
                       <Text className="font-semibold text-neutral-800">
                         #{oid?.toString().slice(-6)}
                       </Text>
-                      <Text
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          isServed
-                            ? "bg-green-200 text-green-700"
-                            : isPending
-                            ? "bg-orange-200 text-orange-700"
-                            : "bg-blue-200 text-blue-700"
-                        }`}
-                      >
+                      <Text className={`px-2 py-1 rounded-full text-xs ${badgeStyle}`}>
                         {order.status}
                       </Text>
                     </View>
@@ -200,7 +211,7 @@ export default function Orders() {
                 </View>
               </TouchableOpacity>
 
-              {/* Expanded */}
+              {/* Expanded detail */}
               {expandedOrder === oid ? (
                 <View className="px-4 pb-4 border-t border-neutral-200">
                   <View className="gap-1 mt-3 mb-2">
@@ -215,7 +226,7 @@ export default function Orders() {
                     Total: Rs {order.total ?? order.totalAmount ?? 0}
                   </Text>
 
-                  {/* Owner actions */}
+                  {/* Action buttons */}
                   <View className="flex-row gap-2 mt-3">
                     {isPending && (
                       <>
@@ -237,6 +248,7 @@ export default function Orders() {
                         </TouchableOpacity>
                       </>
                     )}
+
                     {isAccepted && (
                       <TouchableOpacity
                         onPress={() => handleStatusChange(oid, "served")}
@@ -246,6 +258,36 @@ export default function Orders() {
                           Mark Served
                         </Text>
                       </TouchableOpacity>
+                    )}
+
+                    {/* FIX: ready orders can also be marked served by owner */}
+                    {isReady && (
+                      <TouchableOpacity
+                        onPress={() => handleStatusChange(oid, "served")}
+                        className="flex-1 bg-teal-600 py-2 rounded-xl"
+                      >
+                        <Text className="text-white text-center text-sm font-quicksand-semibold">
+                          Mark Served
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Already served — read-only */}
+                    {isServed && (
+                      <View className="flex-1 bg-green-100 py-2 rounded-xl items-center">
+                        <Text className="text-green-700 text-sm font-quicksand-semibold">
+                          ✓ Served
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Rejected/cancelled — read-only */}
+                    {isRejected && (
+                      <View className="flex-1 bg-red-100 py-2 rounded-xl items-center">
+                        <Text className="text-red-600 text-sm font-quicksand-semibold">
+                          ✕ {order.status}
+                        </Text>
+                      </View>
                     )}
                   </View>
                 </View>

@@ -1,3 +1,4 @@
+// ─── app/chef/dashboard.jsx ───────────────────────────────────────────────────
 import { images } from "@/constants";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -28,11 +29,33 @@ import {
 
 export default function KitchenDashboard() {
   const dispatch = useDispatch();
-  const orders = useSelector(selectKitchenOrders);
+  const allOrders = useSelector(selectKitchenOrders);
   const fetchStatus = useSelector(selectChefFetchStatus);
   const actionStatus = useSelector(selectChefActionStatus);
   const error = useSelector(selectChefError);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Default selected tab is "pending"
+  const [activeTab, setActiveTab] = useState("pending");
+
+  // Derive per-status lists
+  const pendingOrders = allOrders.filter(
+    (o) => (o.status ?? "").toLowerCase() === "pending"
+  );
+  const activeOrders = allOrders.filter(
+    (o) => (o.status ?? "").toLowerCase() === "accepted"
+  );
+  const readyOrders = allOrders.filter(
+    (o) => (o.status ?? "").toLowerCase() === "ready"
+  );
+
+  // What the scroll list actually shows
+  const visibleOrders =
+    activeTab === "pending"
+      ? pendingOrders
+      : activeTab === "active"
+      ? activeOrders
+      : readyOrders;
 
   const load = useCallback(() => {
     dispatch(fetchKitchenOrdersAsync());
@@ -48,9 +71,8 @@ export default function KitchenDashboard() {
     setRefreshing(false);
   }, [dispatch]);
 
-  const handleAccept = (orderId, eta) => {
+  const handleAccept = (orderId, eta) =>
     dispatch(acceptOrderAsync({ orderId, eta }));
-  };
 
   const handleReject = (orderId) => {
     Alert.alert("Reject Order", "Are you sure you want to reject this order?", [
@@ -63,28 +85,54 @@ export default function KitchenDashboard() {
     ]);
   };
 
-  const handleReady = (orderId) => {
-    dispatch(markOrderReadyAsync(orderId));
-  };
+  const handleReady = (orderId) => dispatch(markOrderReadyAsync(orderId));
 
   const handleLogout = async () => {
     await dispatch(chefLogoutAsync());
     router.replace("/chef");
   };
 
-  const pendingCount = orders.filter((o) =>
-    ["pending"].includes((o.status ?? "").toLowerCase())
-  ).length;
-  const activeCount = orders.filter((o) =>
-    ["accepted"].includes((o.status ?? "").toLowerCase())
-  ).length;
-  const readyCount = orders.filter((o) =>
-    ["ready"].includes((o.status ?? "").toLowerCase())
-  ).length;
-
   const isInitialLoading =
     (fetchStatus === "loading" || fetchStatus === "idle") &&
-    orders.length === 0;
+    allOrders.length === 0;
+
+  const tabs = [
+    {
+      key: "pending",
+      label: "Pending",
+      count: pendingOrders.length,
+      selectedText: "text-yellow-300",
+      selectedBorder: "border-yellow-300",
+    },
+    {
+      key: "active",
+      label: "Active",
+      count: activeOrders.length,
+      selectedText: "text-blue-300",
+      selectedBorder: "border-blue-300",
+    },
+    {
+      key: "ready",
+      label: "Ready",
+      count: readyOrders.length,
+      selectedText: "text-green-300",
+      selectedBorder: "border-green-300",
+    },
+  ];
+
+  const sectionLabel =
+    activeTab === "pending"
+      ? "Pending Orders"
+      : activeTab === "active"
+      ? "Active Orders"
+      : "Ready Orders";
+
+  const emptyLabel =
+    activeTab === "pending"
+      ? "No pending orders"
+      : activeTab === "active"
+      ? "No active orders"
+      : "No orders ready yet";
 
   return (
     <SafeAreaView className="flex-1 bg-[#F8FAFC]">
@@ -102,17 +150,36 @@ export default function KitchenDashboard() {
           </TouchableOpacity>
         </View>
 
+        {/* Clickable tab bar — same layout as before, now tappable */}
         <View className="flex-row justify-around mt-2 bg-green-700 rounded-2xl p-3">
-          {[
-            { label: "Pending", count: pendingCount, color: "text-yellow-300" },
-            { label: "Active", count: activeCount, color: "text-blue-300" },
-            { label: "Ready", count: readyCount, color: "text-green-300" },
-          ].map((s) => (
-            <View key={s.label} className="items-center">
-              <Text className={`text-2xl font-bold ${s.color}`}>{s.count}</Text>
-              <Text className="text-white/70 text-xs">{s.label}</Text>
-            </View>
-          ))}
+          {tabs.map((tab) => {
+            const selected = activeTab === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                onPress={() => setActiveTab(tab.key)}
+                activeOpacity={0.7}
+                className={`flex-1 items-center py-1 mx-1 rounded-xl border-2 ${
+                  selected ? tab.selectedBorder : "border-transparent"
+                }`}
+              >
+                <Text
+                  className={`text-2xl font-bold ${
+                    selected ? tab.selectedText : "text-white/50"
+                  }`}
+                >
+                  {tab.count}
+                </Text>
+                <Text
+                  className={`text-xs ${
+                    selected ? "text-white" : "text-white/40"
+                  }`}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
@@ -139,7 +206,7 @@ export default function KitchenDashboard() {
       )}
 
       {/* Error */}
-      {fetchStatus === "failed" && orders.length === 0 && (
+      {fetchStatus === "failed" && allOrders.length === 0 && (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-red-500 text-center mb-4">
             {error ?? "Failed to load orders"}
@@ -153,7 +220,7 @@ export default function KitchenDashboard() {
         </View>
       )}
 
-      {/* Orders list */}
+      {/* Orders for the selected tab */}
       {!isInitialLoading && (
         <ScrollView
           className="px-4 mt-4"
@@ -171,10 +238,12 @@ export default function KitchenDashboard() {
               style={{ tintColor: "#111", width: 20, height: 20 }}
               resizeMode="contain"
             />
-            <Text className="font-quicksand-semibold text-lg">Live Orders</Text>
+            <Text className="font-quicksand-semibold text-lg">
+              {sectionLabel}
+            </Text>
           </View>
 
-          {orders.length === 0 ? (
+          {visibleOrders.length === 0 ? (
             <View className="items-center justify-center py-16">
               <Image
                 source={images.emptyState}
@@ -182,14 +251,14 @@ export default function KitchenDashboard() {
                 resizeMode="contain"
               />
               <Text className="text-neutral-500 mt-4 font-quicksand-medium">
-                No active orders
+                {emptyLabel}
               </Text>
               <Text className="text-neutral-400 text-sm mt-1">
                 Pull down to refresh
               </Text>
             </View>
           ) : (
-            orders.map((order) => (
+            visibleOrders.map((order) => (
               <OrderCard
                 key={order._id ?? order.id}
                 order={order}
@@ -199,6 +268,7 @@ export default function KitchenDashboard() {
               />
             ))
           )}
+
           <View style={{ height: 100 }} />
         </ScrollView>
       )}

@@ -1,13 +1,3 @@
-/**
- * Owner Menu Tab
- * ─────────────────────────────────────────────────────────────
- * • Manage menu items  (add / edit / delete)
- * • Manage categories  (add / delete)   ← NEW
- * • Image upload via expo-image-picker → multipart to Cloudinary
- * • Emoji fallback if no image chosen
- * • Letter-on-colour fallback if neither image nor emoji
- */
-
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
