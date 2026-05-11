@@ -1,15 +1,25 @@
 import { images } from "@/constants";
 import {
+  resetCustomer,
+  scanQrAsync,
+  selectScanStatus,
+  selectWifi,
+} from "@/services/customerSlice";
+import {
   fetchAllRestaurantsAsync,
   selectListStatus,
   selectRestaurantError,
   selectRestaurants,
 } from "@/services/restaurantSlice";
 import { router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Image,
+  Linking,
+  Modal,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -18,44 +28,320 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
+// ── Constants ─────────────────────────────────────────────────
+const TABLES_PER_RESTAURANT = 8;
 const BUTTON_COLORS = [
-  "bg-primary",
-  "bg-red-600",
-  "bg-teal-600",
-  "bg-blue-600",
-  "bg-indigo-600",
-  "bg-pink-600",
-  "bg-yellow-600",
+  "bg-primary", "bg-red-600", "bg-teal-600",
+  "bg-blue-600", "bg-indigo-600", "bg-pink-600", "bg-yellow-600",
 ];
 
+// ── WiFi Modal ────────────────────────────────────────────────
+const WifiModal = ({ visible, wifi, restaurantName, onConnect, onSkip }) => (
+  <Modal transparent animationType="slide" visible={visible} statusBarTranslucent>
+    <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.55)" }}>
+      <View className="bg-white rounded-t-3xl px-6 pt-5 pb-10">
+        <View className="w-10 h-1 bg-neutral-200 rounded-full self-center mb-6" />
+        <View className="w-16 h-16 bg-blue-50 rounded-2xl items-center justify-center self-center mb-4">
+          <Text style={{ fontSize: 32 }}>📶</Text>
+        </View>
+        <Text className="text-xl font-quicksand-bold text-neutral-800 text-center mb-1">
+          Free WiFi Available
+        </Text>
+        <Text className="text-neutral-500 text-center font-quicksand-medium mb-6">
+          {restaurantName} offers free WiFi for guests
+        </Text>
+        <View className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 gap-3">
+          <View className="flex-row justify-between items-center">
+            <Text className="text-blue-600 font-quicksand-medium text-sm">Network</Text>
+            <Text className="text-blue-900 font-quicksand-bold">{wifi?.ssid ?? "—"}</Text>
+          </View>
+          {wifi?.password ? (
+            <View className="flex-row justify-between items-center">
+              <Text className="text-blue-600 font-quicksand-medium text-sm">Password</Text>
+              <Text className="text-blue-900 font-quicksand-bold tracking-widest">{wifi.password}</Text>
+            </View>
+          ) : (
+            <View className="flex-row justify-between items-center">
+              <Text className="text-blue-600 font-quicksand-medium text-sm">Security</Text>
+              <Text className="text-blue-900 font-quicksand-bold">Open Network</Text>
+            </View>
+          )}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-blue-600 font-quicksand-medium text-sm">Type</Text>
+            <Text className="text-blue-900 font-quicksand-bold">{wifi?.type ?? "WPA"}</Text>
+          </View>
+        </View>
+        <TouchableOpacity onPress={onConnect} className="bg-blue-600 py-4 rounded-2xl mb-3">
+          <Text className="text-white text-center font-quicksand-bold text-base">Connect to WiFi</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onSkip} className="py-3">
+          <Text className="text-neutral-400 text-center font-quicksand-medium">Skip, go to menu →</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+);
+
+// ── Scan line animation ───────────────────────────────────────
+const ScanLine = () => {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, { toValue: 1, duration: 1800, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0, duration: 1800, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [-100, 100] });
+  return (
+    <Animated.View
+      style={{
+        transform: [{ translateY }],
+        position: "absolute", left: 8, right: 8, height: 2,
+        backgroundColor: "#ff4c1b", opacity: 0.9,
+      }}
+    />
+  );
+};
+
+// ── Scanner Modal (camera only opened when user taps) ─────────
+const ScannerModal = ({ visible, onClose, onScanned }) => {
+  const [CameraView, setCameraView] = useState(null);
+  const [permission, setPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [error, setError] = useState("");
+  const isLoading = false;
+
+  // Lazy-load expo-camera only when modal opens
+  useEffect(() => {
+    if (!visible) return;
+    setScanned(false);
+    setError("");
+    import("expo-camera")
+      .then((mod) => {
+        setCameraView(() => mod.CameraView);
+        mod.Camera.requestCameraPermissionsAsync().then((res) => {
+          setPermission(res.status === "granted");
+        });
+      })
+      .catch(() => {
+        setError("Camera not available. Please install expo-camera.");
+      });
+  }, [visible]);
+
+  const handleBarCodeScanned = ({ data }) => {
+    if (scanned) return;
+    setScanned(true);
+    onScanned(data);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <Modal visible={visible} animationType="slide" statusBarTranslucent onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: "#000" }}>
+        {/* Header */}
+        <SafeAreaView>
+          <View className="flex-row items-center justify-between px-4 py-3 bg-black">
+            <TouchableOpacity
+              onPress={onClose}
+              className="w-10 h-10 bg-white/15 rounded-full items-center justify-center"
+            >
+              <Image source={images.arrowBack} className="w-5 h-5" tintColor="white" />
+            </TouchableOpacity>
+            <Text className="text-white font-quicksand-bold text-lg">Scan QR Code</Text>
+            <View className="w-10" />
+          </View>
+        </SafeAreaView>
+
+        {/* Camera or states */}
+        {error ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Text className="text-red-400 text-center font-quicksand-medium mb-6">{error}</Text>
+            <TouchableOpacity onPress={onClose} className="bg-primary px-8 py-3 rounded-2xl">
+              <Text className="text-white font-quicksand-semibold">Go Back</Text>
+            </TouchableOpacity>
+          </View>
+        ) : permission === false ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Image source={images.qrcode} className="w-16 h-16 mb-4" tintColor="#ff4c1b" />
+            <Text className="text-white text-xl font-quicksand-bold text-center mb-3">
+              Camera Permission Required
+            </Text>
+            <Text className="text-neutral-400 text-center font-quicksand-medium mb-6 leading-6">
+              Please allow camera access in your device settings to scan QR codes.
+            </Text>
+            <TouchableOpacity onPress={onClose} className="bg-white/10 px-8 py-3 rounded-2xl">
+              <Text className="text-white font-quicksand-semibold">Go Back</Text>
+            </TouchableOpacity>
+          </View>
+        ) : !CameraView || permission === null ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator color="#ff4c1b" size="large" />
+            <Text className="text-neutral-400 font-quicksand-medium mt-4">Starting camera…</Text>
+          </View>
+        ) : (
+          <CameraView
+            style={{ flex: 1 }}
+            facing="back"
+            barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+            onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+          >
+            <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+              {/* Dark panels */}
+              <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: "28%", backgroundColor: "rgba(0,0,0,0.65)" }} />
+              <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "32%", backgroundColor: "rgba(0,0,0,0.65)" }} />
+              <View style={{ position: "absolute", top: "28%", bottom: "32%", left: 0, width: "10%", backgroundColor: "rgba(0,0,0,0.65)" }} />
+              <View style={{ position: "absolute", top: "28%", bottom: "32%", right: 0, width: "10%", backgroundColor: "rgba(0,0,0,0.65)" }} />
+
+              {/* Viewfinder */}
+              <View style={{ width: 256, height: 256, position: "relative" }}>
+                {/* Corners */}
+                {[
+                  { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3 },
+                  { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3 },
+                  { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3 },
+                  { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3 },
+                ].map((style, i) => (
+                  <View key={i} style={{ position: "absolute", width: 28, height: 28, borderColor: "#ff4c1b", borderRadius: 6, ...style }} />
+                ))}
+
+                {!scanned && <ScanLine />}
+
+                {scanned && (
+                  <View style={{
+                    position: "absolute", inset: 0,
+                    backgroundColor: "rgba(34,197,94,0.25)",
+                    alignItems: "center", justifyContent: "center", borderRadius: 8,
+                  }}>
+                    <Text style={{ fontSize: 52 }}>✓</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Hint */}
+              <View style={{ marginTop: 24, paddingHorizontal: 40, alignItems: "center" }}>
+                {scanned ? (
+                  <Text className="text-green-400 font-quicksand-bold text-center">
+                    QR detected — loading menu…
+                  </Text>
+                ) : (
+                  <Text className="text-white/70 font-quicksand-medium text-center" style={{ lineHeight: 22 }}>
+                    Point your camera at the QR code{"\n"}on your table
+                  </Text>
+                )}
+              </View>
+            </View>
+          </CameraView>
+        )}
+      </View>
+    </Modal>
+  );
+};
+
+// ── Main screen ───────────────────────────────────────────────
 export default function Index() {
-  const dispatch = useDispatch();
+  const dispatch    = useDispatch();
   const restaurants = useSelector(selectRestaurants);
-  const listStatus = useSelector(selectListStatus);
-  const listError = useSelector(selectRestaurantError);
+  const listStatus  = useSelector(selectListStatus);
+  const listError   = useSelector(selectRestaurantError);
+  const scanStatus  = useSelector(selectScanStatus);
+  const wifi        = useSelector(selectWifi);
+
+  const [scannerOpen,    setScannerOpen]    = useState(false);
+  const [wifiModal,      setWifiModal]      = useState(false);
+  const [pendingNav,     setPendingNav]     = useState(null);
+  const [restaurantName, setRestaurantName] = useState("");
+  const [scanLoading,    setScanLoading]    = useState(false);
 
   useEffect(() => {
     dispatch(fetchAllRestaurantsAsync());
   }, [dispatch]);
 
-  // One button per restaurant — always table 1 for demo
-  const demoButtons = restaurants.map((r) => ({
-    label: `Scan Table 1 — ${r.name}`,
-    restaurantId: r._id ?? r.id,
-    tableNumber: 1,
-  }));
+  // ── Demo table navigation ─────────────────────────────────
+  const getRestaurantForTable = (tableNumber) => {
+    if (!restaurants.length) return null;
+    const idx = Math.min(
+      Math.floor((tableNumber - 1) / TABLES_PER_RESTAURANT),
+      restaurants.length - 1,
+    );
+    return restaurants[idx];
+  };
 
-  const handleScanTable = ({ restaurantId, tableNumber }) => {
-    if (!restaurantId) return;
-    // ✅ Correct route: /customer/(tabs)/home
+  const handleDemoTable = (tableNumber) => {
+    const restaurant = getRestaurantForTable(tableNumber);
+    if (!restaurant) return;
     router.push({
       pathname: "/customer/(tabs)/home",
-      params: { table: tableNumber, restaurantId },
+      params: { table: tableNumber, restaurantId: restaurant._id ?? restaurant.id },
     });
   };
 
+  const demoTables = restaurants.map((r, idx) => ({
+    label: `${r.name}  —  Table ${idx * TABLES_PER_RESTAURANT + 1}`,
+    tableNumber: idx * TABLES_PER_RESTAURANT + 1,
+    restaurantId: r._id ?? r.id,
+  }));
+
+  // ── Real QR scan handler ──────────────────────────────────
+  const handleScanned = async (data) => {
+    setScanLoading(true);
+    dispatch(resetCustomer());
+
+    const result = await dispatch(scanQrAsync(data));
+    setScanLoading(false);
+
+    if (scanQrAsync.fulfilled.match(result)) {
+      const payload      = result.payload;
+      const restaurantId =
+        payload?.restaurant?._id?.toString() ??
+        payload?.restaurant?.id?.toString();
+      const tableNumber  = payload?.session?.tableNumber;
+      const name         = payload?.restaurant?.name ?? "The Restaurant";
+
+      setPendingNav({ restaurantId, tableNumber });
+      setRestaurantName(name);
+      setScannerOpen(false);
+
+      if (payload?.wifi?.ssid) {
+        setWifiModal(true);
+      } else {
+        goToMenu(restaurantId, tableNumber);
+      }
+    } else {
+      setScannerOpen(false);
+      // Small delay so modal close animation finishes before alert
+      setTimeout(() => {
+        alert(result.payload ?? "Invalid QR code. Please try again.");
+      }, 400);
+    }
+  };
+
+  const goToMenu = (restaurantId, tableNumber) => {
+    setWifiModal(false);
+    router.replace({
+      pathname: "/customer/(tabs)/home",
+      params: {
+        restaurantId: restaurantId ?? pendingNav?.restaurantId,
+        table:        tableNumber  ?? pendingNav?.tableNumber,
+      },
+    });
+  };
+
+  const handleConnectWifi = () => {
+    if (wifi?.connectionString) {
+      Linking.openURL(wifi.connectionString).catch(() => {
+        Platform.OS === "ios"
+          ? Linking.openURL("App-Prefs:WIFI")
+          : Linking.openSettings();
+      });
+    }
+    setTimeout(() => goToMenu(), 400);
+  };
+
   const isLoading = listStatus === "idle" || listStatus === "loading";
-  const isFailed = listStatus === "failed";
+  const isFailed  = listStatus === "failed";
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF4EC]">
@@ -64,86 +350,102 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
         className="px-5"
       >
-        {/* Header */}
+        {/* ── Header ── */}
         <View className="flex-row justify-between items-center mt-4">
           <View>
             <Text className="text-primary text-xl font-quicksand-bold">Eato</Text>
-            <Text className="text-gray-500 text-sm font-quicksand-semibold">
-              Scan to order
-            </Text>
+            <Text className="text-gray-500 text-sm font-quicksand-semibold">Scan to order</Text>
           </View>
 
           <View className="flex-row gap-3">
             <TouchableOpacity
               onPress={() => router.push("/resturant")}
-              className="w-10 h-10 rounded-full bg-white items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
             >
-              <Image
-                source={images.restaurant}
-                className="size-5"
-                resizeMode="contain"
-                tintColor="#ff4c1b"
-              />
+              <Image source={images.restaurant} className="size-5" resizeMode="contain" tintColor="#ff4c1b" />
             </TouchableOpacity>
-
             <TouchableOpacity
               onPress={() => router.push("/chef")}
-              className="w-10 h-10 rounded-full bg-white items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
             >
-              <Image
-                source={images.chef}
-                className="size-5"
-                resizeMode="contain"
-                tintColor="#ff4c1b"
-              />
+              <Image source={images.chef} className="size-5" resizeMode="contain" tintColor="#ff4c1b" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* QR Scanner frame */}
-        <View className="items-center mt-10">
-          <View className="w-72 h-72 relative items-center justify-center">
-            <View className="absolute top-0 left-0 w-10 h-10 border-l-4 border-t-4 border-primary rounded-tl-3xl" />
-            <View className="absolute top-0 right-0 w-10 h-10 border-r-4 border-t-4 border-primary rounded-tr-3xl" />
-            <View className="absolute bottom-0 left-0 w-10 h-10 border-l-4 border-b-4 border-primary rounded-bl-3xl" />
-            <View className="absolute bottom-0 right-0 w-10 h-10 border-r-4 border-b-4 border-primary rounded-br-3xl" />
+        {/* ── QR Scanner Section ── */}
+        <View className="mt-10 items-center">
+          {/* Viewfinder graphic */}
+          <View className="items-center justify-center mb-6">
+            <View className="w-52 h-52 relative items-center justify-center">
+              {/* Corners */}
+              <View className="absolute top-0 left-0 w-9 h-9 border-l-4 border-t-4 border-primary rounded-tl-2xl" />
+              <View className="absolute top-0 right-0 w-9 h-9 border-r-4 border-t-4 border-primary rounded-tr-2xl" />
+              <View className="absolute bottom-0 left-0 w-9 h-9 border-l-4 border-b-4 border-primary rounded-bl-2xl" />
+              <View className="absolute bottom-0 right-0 w-9 h-9 border-r-4 border-b-4 border-primary rounded-br-2xl" />
 
-            <View className="w-32 h-32 bg-white rounded-2xl items-center justify-center shadow-md">
-              <Image
-                source={images.qrcode}
-                className="w-20 h-20"
-                resizeMode="contain"
-                tintColor="#ff4c1b"
-              />
+              {/* Icon */}
+              <View className="w-28 h-28 bg-white rounded-2xl items-center justify-center shadow-md">
+                {scanLoading ? (
+                  <ActivityIndicator color="#ff4c1b" size="large" />
+                ) : (
+                  <Image source={images.qrcode} className="w-20 h-20" resizeMode="contain" tintColor="#ff4c1b" />
+                )}
+              </View>
             </View>
           </View>
 
-          <Text className="mt-8 text-lg font-quicksand-bold">
-            Scan Table QR Code
+          <Text className="text-xl font-quicksand-bold text-neutral-800">Scan Table QR Code</Text>
+          <Text className="text-gray-500 text-center mt-2 font-quicksand-medium" style={{ lineHeight: 22 }}>
+            Point your camera at the QR code{"\n"}on your table to start ordering
           </Text>
-          <Text className="text-gray-500 text-center mt-1">
-            Point your camera at the QR code on your table{"\n"}to start ordering
-          </Text>
-          <Text className="mt-6 text-gray-400 text-sm">
-            Demo Mode — tap to simulate scan
-          </Text>
+
+          {/* Scan button */}
+          <TouchableOpacity
+            onPress={() => setScannerOpen(true)}
+            disabled={scanLoading}
+            className="mt-6 bg-primary w-full py-4 rounded-2xl flex-row items-center justify-center gap-3"
+            style={{ shadowColor: "#ff4c1b", shadowOpacity: 0.35, shadowRadius: 10, elevation: 6 }}
+          >
+            {scanLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Image source={images.qrcode} className="w-5 h-5" tintColor="white" />
+                <Text className="text-white font-quicksand-bold text-base">Open QR Scanner</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
 
-        {/* Buttons */}
-        <View className="w-full mt-4 pb-8">
+        {/* ── Demo / fallback buttons ── */}
+        <View className="w-full mt-8 pb-8">
+          {/* Divider */}
+          <View className="flex-row items-center gap-3 mb-4">
+            <View className="flex-1 h-px bg-neutral-200" />
+            <Text className="text-neutral-400 text-xs font-quicksand-medium">DEMO MODE</Text>
+            <View className="flex-1 h-px bg-neutral-200" />
+          </View>
+
+          <Text className="text-neutral-400 text-xs text-center mb-4 font-quicksand-medium">
+            Tap a restaurant below to simulate scanning its QR code
+          </Text>
+
+          {/* Loading */}
           {isLoading && (
             <View className="items-center py-6">
               <ActivityIndicator size="large" color="#ff4c1b" />
               <Text className="text-gray-400 text-sm mt-3 font-quicksand-medium">
-                Connecting to server...
+                Loading restaurants…
               </Text>
             </View>
           )}
 
+          {/* Error */}
           {isFailed && (
-            <View className="items-center py-4 px-2">
+            <View className="items-center py-4">
               <Text className="text-red-500 text-sm text-center mb-3 font-quicksand-medium">
-                {listError ?? "Could not reach the server. Please try again."}
+                {listError ?? "Could not reach the server."}
               </Text>
               <TouchableOpacity
                 onPress={() => dispatch(fetchAllRestaurantsAsync())}
@@ -154,35 +456,49 @@ export default function Index() {
             </View>
           )}
 
+          {/* Restaurant buttons */}
           {listStatus === "succeeded" &&
-            demoButtons.map((btn, idx) => (
+            demoTables.map((btn, idx) => (
               <TouchableOpacity
-                key={btn.restaurantId}
-                onPress={() => handleScanTable(btn)}
+                key={String(btn.restaurantId)}
+                onPress={() => handleDemoTable(btn.tableNumber)}
                 className={`${BUTTON_COLORS[idx % BUTTON_COLORS.length]} w-full py-4 rounded-2xl mt-3`}
               >
-                <Text className="text-white text-center font-quicksand-bold">
-                  {btn.label}
-                </Text>
+                <Text className="text-white text-center font-quicksand-bold">{btn.label}</Text>
               </TouchableOpacity>
             ))}
 
+          {/* Owner login */}
           {!isLoading && (
             <TouchableOpacity
               onPress={() => router.push("/owner")}
               className="bg-purple-600 w-full py-4 rounded-2xl mt-3"
             >
-              <Text className="text-white text-center font-quicksand-bold">
-                Owner Login
-              </Text>
+              <Text className="text-white text-center font-quicksand-bold">Owner Login</Text>
             </TouchableOpacity>
           )}
 
-          <Text className="text-gray-400 text-xs text-center mt-4">
-            WiFi authentication required
+          <Text className="text-gray-400 text-xs text-center mt-5">
+            Real QR scanning requires expo-camera to be installed
           </Text>
         </View>
       </ScrollView>
+
+      {/* ── Scanner Modal ── */}
+      <ScannerModal
+        visible={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScanned={handleScanned}
+      />
+
+      {/* ── WiFi Modal ── */}
+      <WifiModal
+        visible={wifiModal}
+        wifi={wifi}
+        restaurantName={restaurantName}
+        onConnect={handleConnectWifi}
+        onSkip={() => goToMenu()}
+      />
     </SafeAreaView>
   );
 }

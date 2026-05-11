@@ -27,6 +27,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Eato to scan table QR codes to start your order."
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
