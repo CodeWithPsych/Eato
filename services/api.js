@@ -1,20 +1,19 @@
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 // ── Base URL ──────────────────────────────────────────────────
 export const BASE_URL = "https://eato-backend-mb3y.onrender.com/api/v1";
+// export const BASE_URL = "http://localhost:8000/api/v1";
 
-// ── Public client (no auth header) ───────────────────────────
 export const publicApi = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  timeout: 60000, // ← 60 seconds
   headers: { "Content-Type": "application/json" },
 });
 
-// ── Authenticated client ──────────────────────────────────────
 export const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  timeout: 60000, // ← 60 seconds
   headers: { "Content-Type": "application/json" },
 });
 
@@ -29,7 +28,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // On 401 → try refresh, then retry once
@@ -48,47 +47,50 @@ api.interceptors.response.use(
         // Determine which refresh endpoint to use based on stored role
         const role = await AsyncStorage.getItem("userRole"); // "owner" | "chef"
         const endpoint =
-          role === "chef"
-            ? "/chef/refresh-token"
-            : "/owner/auth/refresh-token";
+          role === "chef" ? "/chef/refresh-token" : "/owner/auth/refresh-token";
 
         const { data } = await publicApi.post(endpoint, { refreshToken });
 
-        const newAccess  = data.data?.accessToken;
+        const newAccess = data.data?.accessToken;
         const newRefresh = data.data?.refreshToken;
 
         if (newAccess) {
-          await AsyncStorage.setItem("accessToken",  newAccess);
-          if (newRefresh) await AsyncStorage.setItem("refreshToken", newRefresh);
+          await AsyncStorage.setItem("accessToken", newAccess);
+          if (newRefresh)
+            await AsyncStorage.setItem("refreshToken", newRefresh);
           original.headers.Authorization = `Bearer ${newAccess}`;
           return api(original); // retry original request
         }
       } catch (refreshError) {
         // Refresh failed — clear tokens and let caller handle redirect
-        await AsyncStorage.multiRemove(["accessToken", "refreshToken", "userRole"]);
+        await AsyncStorage.multiRemove([
+          "accessToken",
+          "refreshToken",
+          "userRole",
+        ]);
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // ── Token helpers ─────────────────────────────────────────────
 
 export const saveOwnerTokens = async (accessToken, refreshToken) => {
   await AsyncStorage.multiSet([
-    ["accessToken",  accessToken],
+    ["accessToken", accessToken],
     ["refreshToken", refreshToken],
-    ["userRole",     "owner"],
+    ["userRole", "owner"],
   ]);
 };
 
 export const saveChefTokens = async (accessToken, refreshToken) => {
   await AsyncStorage.multiSet([
-    ["accessToken",  accessToken],
+    ["accessToken", accessToken],
     ["refreshToken", refreshToken],
-    ["userRole",     "chef"],
+    ["userRole", "chef"],
   ]);
 };
 

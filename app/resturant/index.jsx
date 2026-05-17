@@ -1,5 +1,6 @@
 import CustomAlert from "@/components/CustomAlert";
 import { images } from "@/constants";
+import { registerOwner, resendOtp } from "@/services/ownerAuthApi";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -15,11 +16,13 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { registerOwner } from "@/services/ownerAuthApi";
 
 export default function RestaurantSignup() {
   const [ownerData, setOwnerData] = useState({
-    name: "", email: "", phone: "", password: "",
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -31,46 +34,63 @@ export default function RestaurantSignup() {
   const update = (field) => (text) =>
     setOwnerData((prev) => ({ ...prev, [field]: text }));
 
-  const handleSendOTP = async () => {
-    const { name, email, phone, password } = ownerData;
-    if (!name || !email || !phone || !password || !confirmPassword) {
-      setAlertMessage("Please fill all fields");
-      setAlertVisible(true);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setAlertMessage("Passwords do not match");
-      setAlertVisible(true);
-      return;
-    }
-    if (password.length < 8) {
-      setAlertMessage("Password must be at least 8 characters");
-      setAlertVisible(true);
-      return;
-    }
+const handleSendOTP = async () => {
+  const { name, email, phone, password } = ownerData;
+  if (!name || !email || !phone || !password || !confirmPassword) {
+    setAlertMessage("Please fill all fields");
+    setAlertVisible(true);
+    return;
+  }
+  if (password !== confirmPassword) {
+    setAlertMessage("Passwords do not match");
+    setAlertVisible(true);
+    return;
+  }
+  if (password.length < 8) {
+    setAlertMessage("Password must be at least 8 characters");
+    setAlertVisible(true);
+    return;
+  }
 
-    setLoading(true);
-    try {
-      await registerOwner({
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        phone: phone.trim(),
-        password,
-        confirmPassword,
-      });
-      setAlertMessage("OTP sent to " + email.trim());
-      setGoNext(true);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.message ?? err?.message ?? "Registration failed";
+  setLoading(true);
+  try {
+    await registerOwner({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      phone: phone.trim(),
+      password,
+      confirmPassword,
+    });
+    setAlertMessage("OTP sent to " + email.trim());
+    setGoNext(true);
+    setAlertVisible(true);
+  } catch (err) {
+    const status = err?.response?.status;
+    const msg = err?.response?.data?.message ?? err?.message ?? "Registration failed";
+
+    if (status === 409) {
+      // User exists but not verified — resend OTP silently
+      try {
+        await resendOtp(email.toLowerCase().trim());
+        setAlertMessage("OTP sent to " + email.trim());
+        setGoNext(true);
+      } catch (resendErr) {
+        setAlertMessage(
+          resendErr?.response?.data?.message ?? "Could not resend OTP"
+        );
+        setGoNext(false);
+      }
+      setAlertVisible(true);
+    } else {
+      // Any other error — just show it, don't redirect
       setAlertMessage(msg);
       setGoNext(false);
-    } finally {
-      setLoading(false);
       setAlertVisible(true);
     }
-  };
-
+  } finally {
+    setLoading(false);
+  }
+};
   const handleAlertClose = () => {
     setAlertVisible(false);
     if (goNext) {
@@ -187,7 +207,9 @@ export default function RestaurantSignup() {
                   />
                   <TextInput
                     value={
-                      field === "password" ? ownerData.password : confirmPassword
+                      field === "password"
+                        ? ownerData.password
+                        : confirmPassword
                     }
                     onChangeText={
                       field === "password"

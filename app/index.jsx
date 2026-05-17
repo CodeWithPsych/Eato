@@ -1,6 +1,3 @@
-// app/index.jsx
-// ── Fixed: QR scanner reads qrPayload, WiFi connection via Linking ──
-
 import { images } from "@/constants";
 import {
   resetCustomer,
