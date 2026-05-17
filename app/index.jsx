@@ -20,13 +20,13 @@ import {
   Image,
   Linking,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import WifiManager from "react-native-wifi-reborn";
 import { useDispatch, useSelector } from "react-redux";
 
 // ── Constants ─────────────────────────────────────────────────
@@ -162,14 +162,6 @@ const ScanLine = () => {
   );
 };
 
-// ── Scanner Modal ─────────────────────────────────────────────
-/**
- * The camera reads the raw string printed in the QR code.
- * Our QR codes contain the base64url-encoded `qrPayload` string.
- * The backend's `scanQrAsync` / `scanQr` API call expects:
- *   POST /customer/scan  { qrPayload: "<base64url string>" }
- * So we pass `data` (the raw camera scan result) directly as `qrPayload`.
- */
 const ScannerModal = ({ visible, onClose, onScanned }) => {
   const [CameraView, setCameraView] = useState(null);
   const [permission, setPermission] = useState(null);
@@ -193,12 +185,6 @@ const ScannerModal = ({ visible, onClose, onScanned }) => {
       });
   }, [visible]);
 
-  /**
-   * Called by CameraView when it detects a barcode.
-   * `data` is the raw string encoded in the QR — which IS the qrPayload
-   * (base64url JSON produced by encodeQrPayload on the backend).
-   * We pass it straight to onScanned so the parent can call scanQrAsync(data).
-   */
   const handleBarCodeScanned = ({ data }) => {
     if (scanned) return;
     setScanned(true);
@@ -473,15 +459,7 @@ export default function Index() {
     restaurantId: r._id ?? r.id,
   }));
 
-  // ── Real QR scan handler ──────────────────────────────────
-  /**
-   * `data` = the raw string the camera read from the QR code.
-   * Our QR codes are generated with encodeQrPayload() which produces
-   * a base64url string. We send it directly as `qrPayload` to the backend.
-   *
-   * The backend's scanQr endpoint calls decodeQrPayload(raw) internally,
-   * verifies the token, and returns { wifi, restaurant, session }.
-   */
+
   const handleScanned = async (data) => {
     setScanLoading(true);
     dispatch(resetCustomer());
@@ -533,33 +511,20 @@ export default function Index() {
     });
   };
 
-  /**
-   * WiFi connection strategy:
-   * 1. Try the WIFI: URI scheme — Android/iOS native handling auto-connects
-   *    when the password is correct.
-   * 2. If that fails (unsupported on some devices), open WiFi settings
-   *    so the user can connect manually.
-   * Then navigate to the menu regardless.
-   */
   const handleConnectWifi = async () => {
-    if (wifi?.connectionString) {
+    if (wifi?.ssid) {
       try {
-        const supported = await Linking.canOpenURL(wifi.connectionString);
-        if (supported) {
-          await Linking.openURL(wifi.connectionString);
-        } else {
-          // Fallback: open WiFi settings page
-          if (Platform.OS === "ios") {
-            await Linking.openURL("App-Prefs:WIFI");
-          } else {
-            await Linking.openSettings();
-          }
-        }
-      } catch (_) {
-        // Even if Linking fails, proceed to menu
+        await WifiManager.connectToProtectedSSID(
+          wifi.ssid,
+          wifi.password ?? "",
+          wifi.type === "WEP", // isWEP boolean
+        );
+        // connected!
+      } catch (e) {
+        // fallback: open settings
+        Linking.openSettings();
       }
     }
-    // Navigate to menu after a short delay to let the OS WiFi dialog appear
     setTimeout(() => goToMenu(), 500);
   };
 
